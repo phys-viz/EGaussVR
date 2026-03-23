@@ -7,19 +7,13 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      background: #0a0e1a; 
-      overflow: hidden; 
-      font-family: 'Share Tech Mono', monospace;
-      color: #b0c4d8;
-    }
+    body { background: #0a0e1a; overflow: hidden; font-family: 'Share Tech Mono', monospace; color: #b0c4d8; }
     canvas { display: block; }
     #info {
       position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
       font-family: 'Rajdhani', sans-serif; font-weight: 600;
       font-size: 16px; color: #5ce0d2; text-align: center;
-      pointer-events: none; text-shadow: 0 0 8px rgba(92,224,210,0.4);
-      z-index: 10;
+      pointer-events: none; text-shadow: 0 0 8px rgba(92,224,210,0.4); z-index: 10;
     }
     #info .title { font-size: 22px; letter-spacing: 2px; }
     #info .sub { font-size: 13px; color: #7a9bb5; margin-top: 2px; }
@@ -33,54 +27,23 @@
       border: 1px solid rgba(92,224,210,0.3); border-radius: 4px;
       padding: 8px 14px; cursor: pointer; transition: all 0.2s;
     }
-    #desktop-panel button:hover { 
-      background: rgba(92,224,210,0.15); 
-      border-color: #5ce0d2; 
-      box-shadow: 0 0 10px rgba(92,224,210,0.2);
-    }
-    #desktop-panel button.active {
-      background: rgba(92,224,210,0.2);
-      border-color: #5ce0d2;
-      color: #fff;
-      box-shadow: 0 0 12px rgba(92,224,210,0.3);
-    }
-    .btn-group { 
-      display: flex; gap: 4px; 
-      border: 1px solid rgba(92,224,210,0.1); 
-      border-radius: 6px; padding: 4px;
-    }
-    .btn-label {
-      font-family: 'Rajdhani', sans-serif; font-size: 11px;
-      color: #556b7a; padding: 8px 6px; display: flex; align-items: center;
-      letter-spacing: 1px; text-transform: uppercase;
-    }
-    #status-bar {
-      position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
-      font-family: 'Rajdhani', sans-serif; font-size: 14px;
-      color: #7a9bb5; text-align: center; pointer-events: none; z-index: 10;
-    }
-    #vr-button-container { 
-      position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); 
-      z-index: 10; 
-    }
+    #desktop-panel button:hover { background: rgba(92,224,210,0.15); border-color: #5ce0d2; box-shadow: 0 0 10px rgba(92,224,210,0.2); }
+    #desktop-panel button.active { background: rgba(92,224,210,0.2); border-color: #5ce0d2; color: #fff; box-shadow: 0 0 12px rgba(92,224,210,0.3); }
+    .btn-group { display: flex; gap: 4px; border: 1px solid rgba(92,224,210,0.1); border-radius: 6px; padding: 4px; }
+    .btn-label { font-family: 'Rajdhani', sans-serif; font-size: 11px; color: #556b7a; padding: 8px 6px; display: flex; align-items: center; letter-spacing: 1px; text-transform: uppercase; }
+    #status-bar { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); font-family: 'Rajdhani', sans-serif; font-size: 14px; color: #7a9bb5; text-align: center; pointer-events: none; z-index: 10; }
+    #vr-button-container { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 10; }
   </style>
   <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/"
-    }
-  }
+  { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/" } }
   </script>
 </head>
 <body>
-
 <div id="info">
   <div class="title">GAUSS'S LAW — SYMMETRY EXPLORER</div>
   <div class="sub">Choose a charge distribution and Gaussian surface. Drag the surface to find where E is constant.</div>
 </div>
 <div id="status-bar"></div>
-
 <div id="desktop-panel">
   <div class="btn-group">
     <span class="btn-label">Charge</span>
@@ -97,7 +60,6 @@
     <button onclick="resetSurfacePosition()" id="btn-reset">↺ Reset</button>
   </div>
 </div>
-
 <div id="vr-button-container"></div>
 
 <script type="module">
@@ -107,27 +69,25 @@ import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFa
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 const CONFIG = {
-  bgColor: 0x0a0e1a,
-  gridColor: 0x1a2a3a,
-  gridHighlight: 0x1e3348,
-  cyan: 0x5ce0d2,
-  amber: 0xf0a030,
-  green: 0x40e080,
-  red: 0xff3040,
-  
+  bgColor: 0x0a0e1a, gridColor: 0x1a2a3a, gridHighlight: 0x1e3348,
+  cyan: 0x5ce0d2, amber: 0xf0a030, green: 0x40e080, red: 0xff3040,
   chargeOrigin: new THREE.Vector3(0, 1.3, -1.8),
-  
   sphereRadius: 0.5,
   cylinderRadius: 0.35,
   cylinderHeight: 1.2,
-  
-  sphereSamples: 48,
-  
+  // Patch grid resolution
+  sphereNTheta: 8,   // latitude divisions
+  sphereNPhi: 12,    // longitude divisions
+  cylNAround: 12,    // circumferential divisions
+  cylNAlong: 6,      // axial divisions (barrel)
+  cylCapNRings: 3,   // radial rings on endcaps
+  cylCapNWedges: 12, // angular wedges on endcaps
+  // Arrow appearance
   arrowMinLength: 0.06,
   arrowMaxLength: 0.28,
   arrowHeadFraction: 0.3,
   arrowHeadWidthFraction: 0.5,
-  
+  // Uniformity
   uniformityThreshold: 0.08,
 };
 
@@ -135,10 +95,8 @@ const CONFIG = {
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(CONFIG.bgColor);
 scene.fog = new THREE.FogExp2(CONFIG.bgColor, 0.06);
-
 const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.05, 100);
 camera.position.set(0, 1.6, 0);
-
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -146,391 +104,376 @@ renderer.xr.enabled = true;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.2;
 document.body.appendChild(renderer.domElement);
-
-const vrButton = VRButton.createButton(renderer);
-document.getElementById('vr-button-container').appendChild(vrButton);
-
+document.getElementById('vr-button-container').appendChild(VRButton.createButton(renderer));
 const orbitControls = new OrbitControls(camera, renderer.domElement);
 orbitControls.target.set(0, 1.3, -1.8);
-orbitControls.enableDamping = true;
-orbitControls.dampingFactor = 0.08;
-orbitControls.update();
-
+orbitControls.enableDamping = true; orbitControls.dampingFactor = 0.08; orbitControls.update();
 scene.add(new THREE.AmbientLight(0x334466, 0.6));
 const dirLight = new THREE.DirectionalLight(0xaabbcc, 0.8);
-dirLight.position.set(2, 4, 1);
-scene.add(dirLight);
-const pointLight = new THREE.PointLight(CONFIG.cyan, 0.4, 10);
-pointLight.position.set(0, 2.5, -1.5);
-scene.add(pointLight);
+dirLight.position.set(2, 4, 1); scene.add(dirLight);
+const ptLight = new THREE.PointLight(CONFIG.cyan, 0.4, 10);
+ptLight.position.set(0, 2.5, -1.5); scene.add(ptLight);
 
 // ═══ ENVIRONMENT ═══
-const gridHelper = new THREE.GridHelper(20, 40, CONFIG.gridHighlight, CONFIG.gridColor);
-gridHelper.material.opacity = 0.4;
-gridHelper.material.transparent = true;
-scene.add(gridHelper);
-
-function createAxisLine(dir, color, len) {
-  const geo = new THREE.BufferGeometry().setFromPoints([
-    new THREE.Vector3(0,0,0), dir.clone().multiplyScalar(len)
-  ]);
-  return new THREE.Line(geo, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.25 }));
+const grid = new THREE.GridHelper(20, 40, CONFIG.gridHighlight, CONFIG.gridColor);
+grid.material.opacity = 0.4; grid.material.transparent = true; scene.add(grid);
+function mkAxis(dir, color, len) {
+  const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), dir.clone().multiplyScalar(len)]);
+  return new THREE.Line(g, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.25 }));
 }
-const axesGroup = new THREE.Group();
-axesGroup.add(createAxisLine(new THREE.Vector3(1,0,0), 0xff4444, 3));
-axesGroup.add(createAxisLine(new THREE.Vector3(0,1,0), 0x44ff44, 3));
-axesGroup.add(createAxisLine(new THREE.Vector3(0,0,1), 0x4444ff, 3));
-axesGroup.position.copy(CONFIG.chargeOrigin).setY(0);
-scene.add(axesGroup);
+const axes = new THREE.Group();
+axes.add(mkAxis(new THREE.Vector3(1,0,0), 0xff4444, 3));
+axes.add(mkAxis(new THREE.Vector3(0,1,0), 0x44ff44, 3));
+axes.add(mkAxis(new THREE.Vector3(0,0,1), 0x4444ff, 3));
+axes.position.copy(CONFIG.chargeOrigin).setY(0); scene.add(axes);
 
 // ═══ STATE ═══
-const state = {
-  distribution: null,
-  surface: null,
-  surfaceOffset: new THREE.Vector3(0.6, 0.3, 0.4),
-  isUniform: false,
-};
+const state = { distribution: null, surface: null, surfaceOffset: new THREE.Vector3(0.6, 0.3, 0.4), isUniform: false };
+const distributionGroup = new THREE.Group(); scene.add(distributionGroup);
+const surfaceGroup = new THREE.Group(); scene.add(surfaceGroup);
+const arrowGroup = new THREE.Group(); scene.add(arrowGroup);
 
-const distributionGroup = new THREE.Group();
-scene.add(distributionGroup);
-const surfaceGroup = new THREE.Group();
-scene.add(surfaceGroup);
-const arrowGroup = new THREE.Group();
-scene.add(arrowGroup);
-
-// ═══ PANEL LABEL (flat plane, NOT billboard sprite) ═══
+// ═══ LABELS ═══
 function makePanelLabel(text, color, fontSize) {
-  fontSize = fontSize || 24;
-  const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 64;
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, 512, 64);
-  ctx.font = fontSize + 'px Share Tech Mono, monospace';
+  const c = document.createElement('canvas'); c.width = 512; c.height = 64;
+  const ctx = c.getContext('2d'); ctx.font = (fontSize||24) + 'px Share Tech Mono, monospace';
   ctx.fillStyle = '#' + new THREE.Color(color).getHexString();
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(text, 256, 32);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter;
-  const mat = new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide, depthWrite: false });
-  return new THREE.Mesh(new THREE.PlaneGeometry(0.25, 0.03), mat);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, 256, 32);
+  const tex = new THREE.CanvasTexture(c); tex.minFilter = THREE.LinearFilter;
+  return new THREE.Mesh(new THREE.PlaneGeometry(0.25, 0.03),
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide, depthWrite: false }));
 }
-
-// ═══ SCENE LABEL (flat plane that tracks camera rotation) ═══
 function makeSceneLabel(text, color, fontSize) {
-  fontSize = fontSize || 32;
-  const canvas = document.createElement('canvas');
-  canvas.width = 256;
-  canvas.height = 64;
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, 256, 64);
-  ctx.font = fontSize + 'px Share Tech Mono, monospace';
+  const c = document.createElement('canvas'); c.width = 256; c.height = 64;
+  const ctx = c.getContext('2d'); ctx.font = (fontSize||32) + 'px Share Tech Mono, monospace';
   ctx.fillStyle = '#' + new THREE.Color(color).getHexString();
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(text, 128, 32);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter;
-  const mat = new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide, depthWrite: false });
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.075), mat);
-  mesh.name = 'sceneLabel';
-  return mesh;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, 128, 32);
+  const tex = new THREE.CanvasTexture(c); tex.minFilter = THREE.LinearFilter;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.075),
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide, depthWrite: false }));
+  m.name = 'sceneLabel'; return m;
 }
 
 // ═══ CHARGE DISTRIBUTIONS ═══
 function clearDistribution() {
   while (distributionGroup.children.length) {
-    const child = distributionGroup.children[0];
-    child.traverse(c => {
-      if (c.geometry) c.geometry.dispose();
-      if (c.material) { if (c.material.map) c.material.map.dispose(); c.material.dispose(); }
-    });
-    distributionGroup.remove(child);
+    const ch = distributionGroup.children[0];
+    ch.traverse(c => { if (c.geometry) c.geometry.dispose(); if (c.material) { if (c.material.map) c.material.map.dispose(); c.material.dispose(); } });
+    distributionGroup.remove(ch);
   }
 }
-
 function createPointCharge() {
   clearDistribution();
-  const origin = CONFIG.chargeOrigin;
-  
-  // Red sphere
-  const geo = new THREE.SphereGeometry(0.06, 32, 32);
-  const mat = new THREE.MeshStandardMaterial({ color: CONFIG.red, emissive: CONFIG.red, emissiveIntensity: 0.5 });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.copy(origin);
-  distributionGroup.add(mesh);
-  
-  // White "+" on a small plane (will face camera via animate loop)
-  const plusCanvas = document.createElement('canvas');
-  plusCanvas.width = 64; plusCanvas.height = 64;
-  const pctx = plusCanvas.getContext('2d');
-  pctx.font = 'bold 48px Share Tech Mono, monospace';
-  pctx.fillStyle = '#ffffff';
-  pctx.textAlign = 'center'; pctx.textBaseline = 'middle';
-  pctx.fillText('+', 32, 30);
-  const plusTexture = new THREE.CanvasTexture(plusCanvas);
-  plusTexture.minFilter = THREE.LinearFilter;
-  const plusMat = new THREE.MeshBasicMaterial({ map: plusTexture, transparent: true, side: THREE.DoubleSide, depthWrite: false });
-  const plusMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.08, 0.08), plusMat);
-  plusMesh.position.copy(origin).add(new THREE.Vector3(0, 0, 0.065));
-  plusMesh.name = 'sceneLabel';
-  distributionGroup.add(plusMesh);
-  
-  // "+Q" label
-  const label = makeSceneLabel('+Q', CONFIG.red);
-  label.position.copy(origin).add(new THREE.Vector3(0, 0.14, 0));
-  distributionGroup.add(label);
+  const o = CONFIG.chargeOrigin;
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.06, 32, 32),
+    new THREE.MeshStandardMaterial({ color: CONFIG.red, emissive: CONFIG.red, emissiveIntensity: 0.5 }));
+  mesh.position.copy(o); distributionGroup.add(mesh);
+  // + sign
+  const pc = document.createElement('canvas'); pc.width = 64; pc.height = 64;
+  const px = pc.getContext('2d'); px.font = 'bold 48px Share Tech Mono'; px.fillStyle = '#fff';
+  px.textAlign = 'center'; px.textBaseline = 'middle'; px.fillText('+', 32, 30);
+  const pt = new THREE.CanvasTexture(pc); pt.minFilter = THREE.LinearFilter;
+  const pm = new THREE.Mesh(new THREE.PlaneGeometry(0.08, 0.08),
+    new THREE.MeshBasicMaterial({ map: pt, transparent: true, side: THREE.DoubleSide, depthWrite: false }));
+  pm.position.copy(o).add(new THREE.Vector3(0, 0, 0.065)); pm.name = 'sceneLabel';
+  distributionGroup.add(pm);
+  const lbl = makeSceneLabel('+Q', CONFIG.red);
+  lbl.position.copy(o).add(new THREE.Vector3(0, 0.14, 0)); distributionGroup.add(lbl);
 }
-
 function createLineCharge() {
   clearDistribution();
-  const lineLen = 6;
-  const origin = CONFIG.chargeOrigin;
-  
-  // Clean line — no glow cylinder
-  const geo = new THREE.CylinderGeometry(0.018, 0.018, lineLen, 12);
-  const mat = new THREE.MeshStandardMaterial({ color: CONFIG.amber, emissive: CONFIG.amber, emissiveIntensity: 0.5 });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.set(origin.x, origin.y, origin.z);
-  distributionGroup.add(mesh);
-  
-  // Arrow tips for infinite extent
-  const arrowGeo = new THREE.ConeGeometry(0.04, 0.12, 8);
-  const arrowMat = new THREE.MeshStandardMaterial({ color: CONFIG.amber, emissive: CONFIG.amber, emissiveIntensity: 0.4 });
-  const topArrow = new THREE.Mesh(arrowGeo, arrowMat);
-  topArrow.position.set(origin.x, origin.y + lineLen/2 + 0.06, origin.z);
-  distributionGroup.add(topArrow);
-  const bottomArrow = new THREE.Mesh(arrowGeo.clone(), arrowMat.clone());
-  bottomArrow.position.set(origin.x, origin.y - lineLen/2 - 0.06, origin.z);
-  bottomArrow.rotation.z = Math.PI;
-  distributionGroup.add(bottomArrow);
-  
-  // λ label (flat plane, faces camera)
-  const label = makeSceneLabel('\u03BB (infinite)', CONFIG.amber);
-  label.scale.set(1.6, 1.6, 1);
-  label.position.set(origin.x + 0.2, origin.y + 1.5, origin.z);
-  distributionGroup.add(label);
+  const len = 6, o = CONFIG.chargeOrigin;
+  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, len, 12),
+    new THREE.MeshStandardMaterial({ color: CONFIG.amber, emissive: CONFIG.amber, emissiveIntensity: 0.5 }));
+  mesh.position.copy(o); distributionGroup.add(mesh);
+  const aMat = new THREE.MeshStandardMaterial({ color: CONFIG.amber, emissive: CONFIG.amber, emissiveIntensity: 0.4 });
+  const top = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.12, 8), aMat);
+  top.position.set(o.x, o.y + len/2 + 0.06, o.z); distributionGroup.add(top);
+  const bot = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.12, 8), aMat.clone());
+  bot.position.set(o.x, o.y - len/2 - 0.06, o.z); bot.rotation.z = Math.PI; distributionGroup.add(bot);
+  const lbl = makeSceneLabel('\u03BB (infinite)', CONFIG.amber);
+  lbl.scale.set(1.6, 1.6, 1); lbl.position.set(o.x + 0.2, o.y + 1.5, o.z); distributionGroup.add(lbl);
 }
 
-// ═══ GAUSSIAN SURFACES ═══
-let surfaceMesh = null;
+// ═══ PATCH-BASED GAUSSIAN SURFACES ═══
+let surfaceMesh = null; // invisible interaction mesh for raycasting
 
 function clearSurface() {
   while (surfaceGroup.children.length) {
-    const child = surfaceGroup.children[0];
-    if (child.geometry) child.geometry.dispose();
-    if (child.material) child.material.dispose();
-    surfaceGroup.remove(child);
+    const ch = surfaceGroup.children[0];
+    ch.traverse(c => { if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); });
+    surfaceGroup.remove(ch);
   }
   surfaceMesh = null;
 }
+function getSurfaceCenter() { return CONFIG.chargeOrigin.clone().add(state.surfaceOffset); }
 
-function getSurfaceCenter() {
-  return CONFIG.chargeOrigin.clone().add(state.surfaceOffset);
+// Build a quad from 4 corner points (Vector3 in local coords), return { mesh, edges, center, normal }
+function makeQuadPatch(p0, p1, p2, p3) {
+  // p0--p1
+  // |    |
+  // p3--p2
+  const center = new THREE.Vector3().add(p0).add(p1).add(p2).add(p3).multiplyScalar(0.25);
+  const v1 = new THREE.Vector3().subVectors(p1, p0);
+  const v2 = new THREE.Vector3().subVectors(p3, p0);
+  const normal = new THREE.Vector3().crossVectors(v1, v2).normalize();
+
+  // Filled quad (two triangles)
+  const geo = new THREE.BufferGeometry();
+  const verts = new Float32Array([
+    p0.x,p0.y,p0.z, p1.x,p1.y,p1.z, p2.x,p2.y,p2.z,
+    p0.x,p0.y,p0.z, p2.x,p2.y,p2.z, p3.x,p3.y,p3.z,
+  ]);
+  geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+  geo.computeVertexNormals();
+
+  // Edge outline
+  const edgeGeo = new THREE.BufferGeometry();
+  const edgeVerts = new Float32Array([
+    p0.x,p0.y,p0.z, p1.x,p1.y,p1.z,
+    p1.x,p1.y,p1.z, p2.x,p2.y,p2.z,
+    p2.x,p2.y,p2.z, p3.x,p3.y,p3.z,
+    p3.x,p3.y,p3.z, p0.x,p0.y,p0.z,
+  ]);
+  edgeGeo.setAttribute('position', new THREE.BufferAttribute(edgeVerts, 3));
+
+  return { geo, edgeGeo, center, normal };
 }
 
-function createGaussianSurface(type) {
-  clearSurface();
-  const center = getSurfaceCenter();
-  let geo, wireGeo;
-  
-  const solidMat = new THREE.MeshStandardMaterial({
-    color: CONFIG.green, transparent: true, opacity: 0.06,
-    side: THREE.DoubleSide, depthWrite: false,
-  });
-  const wireMat = new THREE.LineBasicMaterial({ color: CONFIG.green, transparent: true, opacity: 0.35 });
-  
-  if (type === 'sphere') {
-    geo = new THREE.SphereGeometry(CONFIG.sphereRadius, 24, 16);
-    wireGeo = new THREE.WireframeGeometry(new THREE.SphereGeometry(CONFIG.sphereRadius, 12, 8));
-  } else if (type === 'cylPar') {
-    geo = new THREE.CylinderGeometry(CONFIG.cylinderRadius, CONFIG.cylinderRadius, CONFIG.cylinderHeight, 24, 1, false);
-    wireGeo = new THREE.WireframeGeometry(new THREE.CylinderGeometry(CONFIG.cylinderRadius, CONFIG.cylinderRadius, CONFIG.cylinderHeight, 12, 4, false));
-  } else if (type === 'cylPerp') {
-    geo = new THREE.CylinderGeometry(CONFIG.cylinderRadius, CONFIG.cylinderRadius, CONFIG.cylinderHeight, 24, 1, false);
-    wireGeo = new THREE.WireframeGeometry(new THREE.CylinderGeometry(CONFIG.cylinderRadius, CONFIG.cylinderRadius, CONFIG.cylinderHeight, 12, 4, false));
-    geo.rotateZ(Math.PI / 2);
-    wireGeo.rotateZ(Math.PI / 2);
-  }
-  
-  const solidMesh = new THREE.Mesh(geo, solidMat);
-  solidMesh.position.copy(center);
-  solidMesh.name = 'gaussianSurface';
-  surfaceGroup.add(solidMesh);
-  surfaceMesh = solidMesh;
-  
-  const wireframe = new THREE.LineSegments(wireGeo, wireMat);
-  wireframe.position.copy(center);
-  surfaceGroup.add(wireframe);
+// Sphere on lat/lon: point from (theta, phi)
+function spherePoint(R, theta, phi) {
+  return new THREE.Vector3(
+    R * Math.sin(theta) * Math.cos(phi),
+    R * Math.cos(theta),
+    R * Math.sin(theta) * Math.sin(phi)
+  );
 }
 
-// ═══ SURFACE SAMPLING ═══
-function fibonacciSphere(n, radius) {
-  const points = [];
-  const goldenAngle = Math.PI * (3 - Math.sqrt(5));
-  for (let i = 0; i < n; i++) {
-    const y = 1 - (2 * i) / (n - 1);
-    const r = Math.sqrt(1 - y * y);
-    const theta = goldenAngle * i;
-    points.push(new THREE.Vector3(r * Math.cos(theta) * radius, y * radius, r * Math.sin(theta) * radius));
-  }
-  return points;
-}
-
-function cylinderSamplePoints(radius, height, isPerp) {
-  const points = [], normals = [];
-  const nAround = 10, nAlong = 5;
-  
-  for (let j = 0; j < nAlong; j++) {
-    const t = (j / (nAlong - 1)) - 0.5;
-    const h = t * height;
-    for (let i = 0; i < nAround; i++) {
-      const theta = (i / nAround) * Math.PI * 2;
-      if (isPerp) {
-        points.push(new THREE.Vector3(h, radius * Math.cos(theta), radius * Math.sin(theta)));
-        normals.push(new THREE.Vector3(0, Math.cos(theta), Math.sin(theta)));
-      } else {
-        points.push(new THREE.Vector3(radius * Math.cos(theta), h, radius * Math.sin(theta)));
-        normals.push(new THREE.Vector3(Math.cos(theta), 0, Math.sin(theta)));
-      }
+function buildSpherePatchGrid(R, nTheta, nPhi) {
+  const patches = [];
+  for (let i = 0; i < nTheta; i++) {
+    const t0 = (Math.PI * i) / nTheta;
+    const t1 = (Math.PI * (i + 1)) / nTheta;
+    for (let j = 0; j < nPhi; j++) {
+      const p0a = (2 * Math.PI * j) / nPhi;
+      const p1a = (2 * Math.PI * (j + 1)) / nPhi;
+      const c0 = spherePoint(R, t0, p0a);
+      const c1 = spherePoint(R, t0, p1a);
+      const c2 = spherePoint(R, t1, p1a);
+      const c3 = spherePoint(R, t1, p0a);
+      patches.push(makeQuadPatch(c0, c1, c2, c3));
     }
   }
-  
-  const capRadii = [0, radius * 0.5, radius * 0.85];
-  const capAngles = [0, Math.PI/2, Math.PI, 3*Math.PI/2];
+  return patches;
+}
+
+// Cylinder barrel point (axis along Y by default)
+function cylBarrelPoint(R, H, tFrac, aFrac, isPerp) {
+  const y = (tFrac - 0.5) * H;
+  const angle = aFrac * Math.PI * 2;
+  if (isPerp) {
+    return new THREE.Vector3(y, R * Math.cos(angle), R * Math.sin(angle));
+  }
+  return new THREE.Vector3(R * Math.cos(angle), y, R * Math.sin(angle));
+}
+
+function buildCylinderPatches(R, H, nAround, nAlong, capRings, capWedges, isPerp) {
+  const patches = [];
+
+  // Barrel
+  for (let i = 0; i < nAlong; i++) {
+    const t0 = i / nAlong;
+    const t1 = (i + 1) / nAlong;
+    for (let j = 0; j < nAround; j++) {
+      const a0 = j / nAround;
+      const a1 = (j + 1) / nAround;
+      patches.push(makeQuadPatch(
+        cylBarrelPoint(R, H, t0, a0, isPerp),
+        cylBarrelPoint(R, H, t0, a1, isPerp),
+        cylBarrelPoint(R, H, t1, a1, isPerp),
+        cylBarrelPoint(R, H, t1, a0, isPerp)
+      ));
+    }
+  }
+
+  // Endcaps (polar grid: rings × wedges)
   for (const sign of [-1, 1]) {
-    const hPos = sign * height / 2;
-    for (const cr of capRadii) {
-      if (cr === 0) {
-        if (isPerp) { points.push(new THREE.Vector3(hPos, 0, 0)); normals.push(new THREE.Vector3(sign, 0, 0)); }
-        else { points.push(new THREE.Vector3(0, hPos, 0)); normals.push(new THREE.Vector3(0, sign, 0)); }
-      } else {
-        for (const angle of capAngles) {
-          if (isPerp) { points.push(new THREE.Vector3(hPos, cr*Math.cos(angle), cr*Math.sin(angle))); normals.push(new THREE.Vector3(sign, 0, 0)); }
-          else { points.push(new THREE.Vector3(cr*Math.cos(angle), hPos, cr*Math.sin(angle))); normals.push(new THREE.Vector3(0, sign, 0)); }
+    const hPos = sign * H / 2;
+    for (let ri = 0; ri < capRings; ri++) {
+      const r0 = (ri / capRings) * R;
+      const r1 = ((ri + 1) / capRings) * R;
+      for (let wi = 0; wi < capWedges; wi++) {
+        const a0 = (wi / capWedges) * Math.PI * 2;
+        const a1 = ((wi + 1) / capWedges) * Math.PI * 2;
+        let p0, p1, p2, p3;
+        if (isPerp) {
+          p0 = new THREE.Vector3(hPos, r0 * Math.cos(a0), r0 * Math.sin(a0));
+          p1 = new THREE.Vector3(hPos, r0 * Math.cos(a1), r0 * Math.sin(a1));
+          p2 = new THREE.Vector3(hPos, r1 * Math.cos(a1), r1 * Math.sin(a1));
+          p3 = new THREE.Vector3(hPos, r1 * Math.cos(a0), r1 * Math.sin(a0));
+        } else {
+          p0 = new THREE.Vector3(r0 * Math.cos(a0), hPos, r0 * Math.sin(a0));
+          p1 = new THREE.Vector3(r0 * Math.cos(a1), hPos, r0 * Math.sin(a1));
+          p2 = new THREE.Vector3(r1 * Math.cos(a1), hPos, r1 * Math.sin(a1));
+          p3 = new THREE.Vector3(r1 * Math.cos(a0), hPos, r1 * Math.sin(a0));
+        }
+        // Flip winding for bottom cap so normal points outward
+        if (sign === -1) {
+          patches.push(makeQuadPatch(p0, p3, p2, p1));
+        } else {
+          patches.push(makeQuadPatch(p0, p1, p2, p3));
         }
       }
     }
   }
-  return { points, normals };
+
+  return patches;
 }
 
-function getSamplePoints() {
-  if (!state.surface) return [];
-  if (state.surface === 'sphere') {
-    return fibonacciSphere(CONFIG.sphereSamples, CONFIG.sphereRadius).map(p => ({ localPos: p.clone(), normal: p.clone().normalize() }));
+// Current patch data for arrows
+let currentPatches = [];
+
+function createGaussianSurface(type) {
+  clearSurface();
+  const center = getSurfaceCenter();
+  const container = new THREE.Group();
+  container.position.copy(center);
+
+  let patches;
+  if (type === 'sphere') {
+    patches = buildSpherePatchGrid(CONFIG.sphereRadius, CONFIG.sphereNTheta, CONFIG.sphereNPhi);
+  } else if (type === 'cylPar') {
+    patches = buildCylinderPatches(CONFIG.cylinderRadius, CONFIG.cylinderHeight,
+      CONFIG.cylNAround, CONFIG.cylNAlong, CONFIG.cylCapNRings, CONFIG.cylCapNWedges, false);
+  } else if (type === 'cylPerp') {
+    patches = buildCylinderPatches(CONFIG.cylinderRadius, CONFIG.cylinderHeight,
+      CONFIG.cylNAround, CONFIG.cylNAlong, CONFIG.cylCapNRings, CONFIG.cylCapNWedges, true);
   }
-  const isPerp = state.surface === 'cylPerp';
-  const { points, normals } = cylinderSamplePoints(CONFIG.cylinderRadius, CONFIG.cylinderHeight, isPerp);
-  return points.map((p, i) => ({ localPos: p.clone(), normal: normals[i].clone() }));
+
+  const fillMat = new THREE.MeshBasicMaterial({
+    color: CONFIG.green, transparent: true, opacity: 0.04,
+    side: THREE.DoubleSide, depthWrite: false,
+  });
+  const edgeMat = new THREE.LineBasicMaterial({
+    color: CONFIG.green, transparent: true, opacity: 0.3,
+  });
+
+  patches.forEach(p => {
+    container.add(new THREE.Mesh(p.geo, fillMat));
+    container.add(new THREE.LineSegments(p.edgeGeo, edgeMat));
+  });
+
+  surfaceGroup.add(container);
+  currentPatches = patches;
+
+  // Invisible interaction sphere/box for raycasting drag
+  let hitGeo;
+  if (type === 'sphere') {
+    hitGeo = new THREE.SphereGeometry(CONFIG.sphereRadius, 16, 12);
+  } else if (type === 'cylPar') {
+    hitGeo = new THREE.CylinderGeometry(CONFIG.cylinderRadius, CONFIG.cylinderRadius, CONFIG.cylinderHeight, 16);
+  } else if (type === 'cylPerp') {
+    hitGeo = new THREE.CylinderGeometry(CONFIG.cylinderRadius, CONFIG.cylinderRadius, CONFIG.cylinderHeight, 16);
+    hitGeo.rotateZ(Math.PI / 2);
+  }
+  const hitMat = new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide });
+  surfaceMesh = new THREE.Mesh(hitGeo, hitMat);
+  surfaceMesh.position.copy(center);
+  surfaceMesh.name = 'gaussianSurface';
+  surfaceGroup.add(surfaceMesh);
 }
 
 // ═══ E-FIELD ═══
 function computeEField(worldPos) {
-  const origin = CONFIG.chargeOrigin;
+  const o = CONFIG.chargeOrigin;
   if (state.distribution === 'point') {
-    const r = worldPos.clone().sub(origin);
-    const rMag = r.length();
-    if (rMag < 0.02) return new THREE.Vector3(0, 0, 0);
-    return r.normalize().multiplyScalar(1.0 / (rMag * rMag));
+    const r = worldPos.clone().sub(o); const rm = r.length();
+    if (rm < 0.02) return new THREE.Vector3();
+    return r.normalize().multiplyScalar(1.0 / (rm * rm));
   } else if (state.distribution === 'line') {
-    const dx = worldPos.x - origin.x;
-    const dz = worldPos.z - origin.z;
-    const s = Math.sqrt(dx * dx + dz * dz);
-    if (s < 0.02) return new THREE.Vector3(0, 0, 0);
-    return new THREE.Vector3(dx / s, 0, dz / s).multiplyScalar(1.0 / s);
+    const dx = worldPos.x - o.x, dz = worldPos.z - o.z;
+    const s = Math.sqrt(dx*dx + dz*dz);
+    if (s < 0.02) return new THREE.Vector3();
+    return new THREE.Vector3(dx/s, 0, dz/s).multiplyScalar(1.0 / s);
   }
-  return new THREE.Vector3(0, 0, 0);
+  return new THREE.Vector3();
 }
 
 // ═══ ARROWS ═══
 function clearArrows() {
   while (arrowGroup.children.length) {
-    const child = arrowGroup.children[0];
-    child.traverse(c => { if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); });
-    arrowGroup.remove(child);
+    const ch = arrowGroup.children[0];
+    ch.traverse(c => { if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); });
+    arrowGroup.remove(ch);
   }
 }
-
-function magnitudeToColor(t) {
+function magToColor(t) {
   t = Math.max(0, Math.min(1, t));
-  const color = new THREE.Color();
-  if (t < 0.25) {
-    color.lerpColors(new THREE.Color(0x2040ff), new THREE.Color(0x20d0ff), t / 0.25);
-  } else if (t < 0.5) {
-    color.lerpColors(new THREE.Color(0x20d0ff), new THREE.Color(0x40e080), (t - 0.25) / 0.25);
-  } else if (t < 0.75) {
-    color.lerpColors(new THREE.Color(0x40e080), new THREE.Color(0xf0e030), (t - 0.5) / 0.25);
-  } else {
-    color.lerpColors(new THREE.Color(0xf0e030), new THREE.Color(0xff3030), (t - 0.75) / 0.25);
-  }
-  return color;
+  const c = new THREE.Color();
+  if (t < 0.25) c.lerpColors(new THREE.Color(0x2040ff), new THREE.Color(0x20d0ff), t/0.25);
+  else if (t < 0.5) c.lerpColors(new THREE.Color(0x20d0ff), new THREE.Color(0x40e080), (t-0.25)/0.25);
+  else if (t < 0.75) c.lerpColors(new THREE.Color(0x40e080), new THREE.Color(0xf0e030), (t-0.5)/0.25);
+  else c.lerpColors(new THREE.Color(0xf0e030), new THREE.Color(0xff3030), (t-0.75)/0.25);
+  return c;
 }
 
 function updateArrows() {
   clearArrows();
-  if (!state.distribution || !state.surface) return;
-  
+  if (!state.distribution || !state.surface || currentPatches.length === 0) return;
+
   const center = getSurfaceCenter();
-  const samplePoints = getSamplePoints();
-  
-  const fieldData = samplePoints.map(sp => {
-    const worldPos = sp.localPos.clone().add(center);
-    const E = computeEField(worldPos);
-    return { worldPos, E, magnitude: E.length() };
+
+  // Compute E at center of each patch
+  const data = currentPatches.map(p => {
+    const wp = p.center.clone().add(center);
+    const E = computeEField(wp);
+    return { worldPos: wp, E, mag: E.length() };
   });
-  
-  if (fieldData.length === 0) return;
-  
-  const magnitudes = fieldData.map(d => d.magnitude).filter(m => m > 0.001);
-  if (magnitudes.length === 0) return;
-  
-  const minMag = Math.min(...magnitudes);
-  const maxMag = Math.max(...magnitudes);
-  const meanMag = magnitudes.reduce((a, b) => a + b, 0) / magnitudes.length;
-  const variance = magnitudes.reduce((a, b) => a + (b - meanMag) ** 2, 0) / magnitudes.length;
-  const coeffVar = meanMag > 0 ? Math.sqrt(variance) / meanMag : 1;
-  
-  state.isUniform = coeffVar < CONFIG.uniformityThreshold;
-  
-  fieldData.forEach(d => {
-    if (d.magnitude < 0.001) return;
-    
-    const t = maxMag > minMag ? (d.magnitude - minMag) / (maxMag - minMag) : 0.5;
-    
-    const color = state.isUniform ? new THREE.Color(CONFIG.green) : magnitudeToColor(t);
-    
-    // Length encodes magnitude: short=weak, long=strong
-    const arrowLen = state.isUniform
+
+  const mags = data.map(d => d.mag).filter(m => m > 0.001);
+  if (mags.length === 0) return;
+
+  const minM = Math.min(...mags), maxM = Math.max(...mags);
+  const mean = mags.reduce((a,b) => a+b, 0) / mags.length;
+  const variance = mags.reduce((a,b) => a + (b-mean)**2, 0) / mags.length;
+  const cv = mean > 0 ? Math.sqrt(variance) / mean : 1;
+  state.isUniform = cv < CONFIG.uniformityThreshold;
+
+  data.forEach(d => {
+    if (d.mag < 0.001) return;
+    const t = maxM > minM ? (d.mag - minM) / (maxM - minM) : 0.5;
+    const color = state.isUniform ? new THREE.Color(CONFIG.green) : magToColor(t);
+    const len = state.isUniform
       ? (CONFIG.arrowMinLength + CONFIG.arrowMaxLength) * 0.5
       : CONFIG.arrowMinLength + (CONFIG.arrowMaxLength - CONFIG.arrowMinLength) * t;
-    
-    const headLen = arrowLen * CONFIG.arrowHeadFraction;
-    const headWidth = headLen * CONFIG.arrowHeadWidthFraction;
-    const dir = d.E.clone().normalize();
-    
-    arrowGroup.add(new THREE.ArrowHelper(dir, d.worldPos, arrowLen, color, headLen, headWidth));
+    const hLen = len * CONFIG.arrowHeadFraction;
+    const hWid = hLen * CONFIG.arrowHeadWidthFraction;
+    arrowGroup.add(new THREE.ArrowHelper(d.E.clone().normalize(), d.worldPos, len, color, hLen, hWid));
   });
-  
-  updateSurfaceGlow();
-  updateStatusBar(coeffVar);
+
+  updateSurfaceAppearance();
+  updateStatusBar();
 }
 
-function updateSurfaceGlow() {
+function updateSurfaceAppearance() {
+  // Update patch fill and edge opacity based on uniformity
   surfaceGroup.children.forEach(child => {
-    if (child.isMesh && child.name === 'gaussianSurface') {
-      child.material.opacity = state.isUniform ? 0.12 : 0.06;
-      child.material.emissive = new THREE.Color(state.isUniform ? CONFIG.green : 0x000000);
-      child.material.emissiveIntensity = state.isUniform ? 0.15 : 0;
-    }
-    if (child.isLineSegments) {
-      child.material.opacity = state.isUniform ? 0.6 : 0.35;
+    if (child.isGroup) {
+      child.children.forEach(c => {
+        if (c.isMesh && c.material.visible !== false) {
+          c.material.opacity = state.isUniform ? 0.1 : 0.04;
+          c.material.color.setHex(CONFIG.green);
+        }
+        if (c.isLineSegments) {
+          c.material.opacity = state.isUniform ? 0.5 : 0.3;
+          c.material.color.setHex(CONFIG.green);
+        }
+      });
     }
   });
 }
 
-function updateStatusBar(coeffVar) {
+function updateStatusBar() {
   const bar = document.getElementById('status-bar');
   if (!state.distribution || !state.surface) { bar.textContent = ''; return; }
   bar.innerHTML = state.isUniform
@@ -540,300 +483,212 @@ function updateStatusBar(coeffVar) {
 
 // ═══ VR PANEL ═══
 const vrPanel = new THREE.Group();
-vrPanel.position.set(-0.8, 1.4, -1.5);
-vrPanel.rotation.y = 0.3;
+vrPanel.position.set(-0.8, 1.4, -1.5); vrPanel.rotation.y = 0.3;
 scene.add(vrPanel);
 const panelButtons = [];
 
 function createVRPanel() {
-  const backdropGeo = new THREE.PlaneGeometry(0.6, 0.55);
-  const backdropMat = new THREE.MeshBasicMaterial({ color: 0x0a1020, transparent: true, opacity: 0.85, side: THREE.DoubleSide });
-  vrPanel.add(new THREE.Mesh(backdropGeo, backdropMat));
-  
-  const borderMat = new THREE.LineBasicMaterial({ color: CONFIG.cyan, transparent: true, opacity: 0.4 });
-  vrPanel.add(new THREE.LineSegments(new THREE.EdgesGeometry(backdropGeo), borderMat));
-  
-  const title = makePanelLabel('SYMMETRY EXPLORER', CONFIG.cyan, 28);
-  title.scale.set(1.8, 1.8, 1); title.position.set(0, 0.22, 0.005);
-  vrPanel.add(title);
-  
-  const distLabel = makePanelLabel('DISTRIBUTION', 0x556b7a, 22);
-  distLabel.scale.set(1.2, 1.2, 1); distLabel.position.set(0, 0.14, 0.005);
-  vrPanel.add(distLabel);
-  
-  createVRButton(vrPanel, -0.1, 0.06, 'point', drawPointChargeIcon, () => selectDistribution('point'));
-  createVRButton(vrPanel, 0.1, 0.06, 'line', drawLineChargeIcon, () => selectDistribution('line'));
-  
-  const surfLabel = makePanelLabel('GAUSSIAN SURFACE', 0x556b7a, 22);
-  surfLabel.scale.set(1.2, 1.2, 1); surfLabel.position.set(0, -0.04, 0.005);
-  vrPanel.add(surfLabel);
-  
-  createVRButton(vrPanel, -0.2, -0.12, 'sphere', drawSphereIcon, () => selectSurface('sphere'));
-  createVRButton(vrPanel, 0.0, -0.12, 'cylPar', drawCylParIcon, () => selectSurface('cylPar'));
-  createVRButton(vrPanel, 0.2, -0.12, 'cylPerp', drawCylPerpIcon, () => selectSurface('cylPerp'));
-  
-  createVRButton(vrPanel, 0, -0.22, 'reset', drawResetIcon, () => resetSurfacePosition());
+  const bg = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.55),
+    new THREE.MeshBasicMaterial({ color: 0x0a1020, transparent: true, opacity: 0.85, side: THREE.DoubleSide }));
+  vrPanel.add(bg);
+  vrPanel.add(new THREE.LineSegments(new THREE.EdgesGeometry(bg.geometry),
+    new THREE.LineBasicMaterial({ color: CONFIG.cyan, transparent: true, opacity: 0.4 })));
+
+  const t = makePanelLabel('SYMMETRY EXPLORER', CONFIG.cyan, 28);
+  t.scale.set(1.8,1.8,1); t.position.set(0, 0.22, 0.005); vrPanel.add(t);
+  const dl = makePanelLabel('DISTRIBUTION', 0x556b7a, 22);
+  dl.scale.set(1.2,1.2,1); dl.position.set(0, 0.14, 0.005); vrPanel.add(dl);
+
+  mkVRBtn(vrPanel, -0.1, 0.06, 'point', drawPointIcon, () => selectDistribution('point'));
+  mkVRBtn(vrPanel, 0.1, 0.06, 'line', drawLineIcon, () => selectDistribution('line'));
+
+  const sl = makePanelLabel('GAUSSIAN SURFACE', 0x556b7a, 22);
+  sl.scale.set(1.2,1.2,1); sl.position.set(0, -0.04, 0.005); vrPanel.add(sl);
+
+  mkVRBtn(vrPanel, -0.2, -0.12, 'sphere', drawSphereIcon, () => selectSurface('sphere'));
+  mkVRBtn(vrPanel, 0.0, -0.12, 'cylPar', drawCylParIcon, () => selectSurface('cylPar'));
+  mkVRBtn(vrPanel, 0.2, -0.12, 'cylPerp', drawCylPerpIcon, () => selectSurface('cylPerp'));
+  mkVRBtn(vrPanel, 0, -0.22, 'reset', drawResetIcon, () => resetSurfacePosition());
 }
 
-function createVRButton(parent, x, y, id, drawFn, callback) {
-  const canvas = document.createElement('canvas');
-  canvas.width = 128; canvas.height = 128;
-  drawFn(canvas);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter;
-  const mesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(0.08, 0.08),
-    new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide })
-  );
-  mesh.position.set(x, y, 0.005);
-  mesh.userData = { id, callback };
-  parent.add(mesh);
-  panelButtons.push(mesh);
+function mkVRBtn(parent, x, y, id, drawFn, cb) {
+  const c = document.createElement('canvas'); c.width = 128; c.height = 128;
+  drawFn(c);
+  const tex = new THREE.CanvasTexture(c); tex.minFilter = THREE.LinearFilter;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(0.08, 0.08),
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide }));
+  m.position.set(x, y, 0.005); m.userData = { id, callback: cb };
+  parent.add(m); panelButtons.push(m);
 }
 
-// ═══ ICON DRAWING ═══
-function drawPointChargeIcon(canvas) {
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, 128, 128);
-  ctx.fillStyle = 'rgba(10, 20, 40, 0.9)';
-  ctx.roundRect(4, 4, 120, 120, 8); ctx.fill();
-  ctx.strokeStyle = 'rgba(255, 48, 64, 0.4)'; ctx.lineWidth = 2;
-  ctx.roundRect(4, 4, 120, 120, 8); ctx.stroke();
-  const cx = 64, cy = 64;
-  ctx.fillStyle = '#ff3040';
-  ctx.beginPath(); ctx.arc(cx, cy, 14, 0, Math.PI * 2); ctx.fill();
-  ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.moveTo(cx-7,cy); ctx.lineTo(cx+7,cy); ctx.moveTo(cx,cy-7); ctx.lineTo(cx,cy+7); ctx.stroke();
-  ctx.strokeStyle = 'rgba(255, 48, 64, 0.35)'; ctx.lineWidth = 1.5;
-  for (let i = 0; i < 8; i++) {
-    const a = (i/8)*Math.PI*2;
-    ctx.beginPath(); ctx.moveTo(cx+Math.cos(a)*20, cy+Math.sin(a)*20); ctx.lineTo(cx+Math.cos(a)*42, cy+Math.sin(a)*42); ctx.stroke();
-  }
+// ═══ ICONS ═══
+function drawPointIcon(c) {
+  const x = c.getContext('2d'); x.clearRect(0,0,128,128);
+  x.fillStyle='rgba(10,20,40,0.9)'; x.roundRect(4,4,120,120,8); x.fill();
+  x.strokeStyle='rgba(255,48,64,0.4)'; x.lineWidth=2; x.roundRect(4,4,120,120,8); x.stroke();
+  x.fillStyle='#ff3040'; x.beginPath(); x.arc(64,64,14,0,Math.PI*2); x.fill();
+  x.strokeStyle='#fff'; x.lineWidth=3;
+  x.beginPath(); x.moveTo(57,64); x.lineTo(71,64); x.moveTo(64,57); x.lineTo(64,71); x.stroke();
+  x.strokeStyle='rgba(255,48,64,0.35)'; x.lineWidth=1.5;
+  for(let i=0;i<8;i++){const a=(i/8)*Math.PI*2;
+    x.beginPath(); x.moveTo(64+Math.cos(a)*20,64+Math.sin(a)*20); x.lineTo(64+Math.cos(a)*42,64+Math.sin(a)*42); x.stroke();}
 }
-
-function drawLineChargeIcon(canvas) {
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, 128, 128);
-  ctx.fillStyle = 'rgba(10, 20, 40, 0.9)';
-  ctx.roundRect(4, 4, 120, 120, 8); ctx.fill();
-  ctx.strokeStyle = 'rgba(240, 160, 48, 0.4)'; ctx.lineWidth = 2;
-  ctx.roundRect(4, 4, 120, 120, 8); ctx.stroke();
-  const cx = 64;
-  const g = ctx.createLinearGradient(cx,15,cx,113);
+function drawLineIcon(c) {
+  const x = c.getContext('2d'); x.clearRect(0,0,128,128);
+  x.fillStyle='rgba(10,20,40,0.9)'; x.roundRect(4,4,120,120,8); x.fill();
+  x.strokeStyle='rgba(240,160,48,0.4)'; x.lineWidth=2; x.roundRect(4,4,120,120,8); x.stroke();
+  const g=x.createLinearGradient(64,15,64,113);
   g.addColorStop(0,'rgba(240,160,48,0.1)'); g.addColorStop(0.2,'rgba(240,160,48,1)');
   g.addColorStop(0.8,'rgba(240,160,48,1)'); g.addColorStop(1,'rgba(240,160,48,0.1)');
-  ctx.strokeStyle = g; ctx.lineWidth = 4;
-  ctx.beginPath(); ctx.moveTo(cx,15); ctx.lineTo(cx,113); ctx.stroke();
-  ctx.fillStyle = '#f0a030';
-  ctx.beginPath(); ctx.moveTo(cx,10); ctx.lineTo(cx-6,22); ctx.lineTo(cx+6,22); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(cx,118); ctx.lineTo(cx-6,106); ctx.lineTo(cx+6,106); ctx.fill();
-  ctx.strokeStyle = 'rgba(240,160,48,0.3)'; ctx.lineWidth = 1.5;
-  for (let y = 35; y <= 93; y += 29) {
-    ctx.beginPath(); ctx.moveTo(cx+8,y); ctx.lineTo(cx+38,y); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(cx-8,y); ctx.lineTo(cx-38,y); ctx.stroke();
-  }
-  ctx.font = '18px serif'; ctx.fillStyle = '#f0a030'; ctx.textAlign = 'center';
-  ctx.fillText('\u03BB', 95, 40);
+  x.strokeStyle=g; x.lineWidth=4; x.beginPath(); x.moveTo(64,15); x.lineTo(64,113); x.stroke();
+  x.fillStyle='#f0a030';
+  x.beginPath(); x.moveTo(64,10); x.lineTo(58,22); x.lineTo(70,22); x.fill();
+  x.beginPath(); x.moveTo(64,118); x.lineTo(58,106); x.lineTo(70,106); x.fill();
+  x.strokeStyle='rgba(240,160,48,0.3)'; x.lineWidth=1.5;
+  for(let y=35;y<=93;y+=29){x.beginPath();x.moveTo(72,y);x.lineTo(102,y);x.stroke();x.beginPath();x.moveTo(56,y);x.lineTo(26,y);x.stroke();}
+  x.font='18px serif'; x.fillStyle='#f0a030'; x.textAlign='center'; x.fillText('\u03BB',95,40);
 }
-
-function drawSphereIcon(canvas) {
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, 128, 128);
-  ctx.fillStyle = 'rgba(10, 20, 40, 0.9)';
-  ctx.roundRect(4, 4, 120, 120, 8); ctx.fill();
-  ctx.strokeStyle = 'rgba(64, 224, 128, 0.4)'; ctx.lineWidth = 2;
-  ctx.roundRect(4, 4, 120, 120, 8); ctx.stroke();
-  const cx=64,cy=64,r=36;
-  ctx.strokeStyle = 'rgba(64,224,128,0.7)'; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.stroke();
-  ctx.strokeStyle = 'rgba(64,224,128,0.3)'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.ellipse(cx,cy,r,r*0.3,0,0,Math.PI*2); ctx.stroke();
-  ctx.beginPath(); ctx.ellipse(cx,cy,r*0.3,r,0,0,Math.PI*2); ctx.stroke();
+function drawSphereIcon(c) {
+  const x=c.getContext('2d'); x.clearRect(0,0,128,128);
+  x.fillStyle='rgba(10,20,40,0.9)'; x.roundRect(4,4,120,120,8); x.fill();
+  x.strokeStyle='rgba(64,224,128,0.4)'; x.lineWidth=2; x.roundRect(4,4,120,120,8); x.stroke();
+  x.strokeStyle='rgba(64,224,128,0.7)'; x.lineWidth=2;
+  x.beginPath(); x.arc(64,64,36,0,Math.PI*2); x.stroke();
+  x.strokeStyle='rgba(64,224,128,0.3)'; x.lineWidth=1;
+  x.beginPath(); x.ellipse(64,64,36,11,0,0,Math.PI*2); x.stroke();
+  x.beginPath(); x.ellipse(64,64,11,36,0,0,Math.PI*2); x.stroke();
 }
-
-function drawCylParIcon(canvas) {
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, 128, 128);
-  ctx.fillStyle = 'rgba(10, 20, 40, 0.9)';
-  ctx.roundRect(4, 4, 120, 120, 8); ctx.fill();
-  ctx.strokeStyle = 'rgba(64, 224, 128, 0.4)'; ctx.lineWidth = 2;
-  ctx.roundRect(4, 4, 120, 120, 8); ctx.stroke();
-  const cx = 64;
-  ctx.strokeStyle = 'rgba(64,224,128,0.6)'; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.ellipse(cx,28,28,10,0,0,Math.PI*2); ctx.stroke();
-  ctx.beginPath(); ctx.ellipse(cx,100,28,10,0,0,Math.PI*2); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(cx-28,28); ctx.lineTo(cx-28,100); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(cx+28,28); ctx.lineTo(cx+28,100); ctx.stroke();
-  ctx.strokeStyle = 'rgba(64,224,128,0.25)'; ctx.setLineDash([3,3]);
-  ctx.beginPath(); ctx.moveTo(cx,15); ctx.lineTo(cx,113); ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.font = 'bold 16px sans-serif'; ctx.fillStyle = 'rgba(64,224,128,0.6)'; ctx.textAlign = 'center';
-  ctx.fillText('\u2225', 105, 25);
+function drawCylParIcon(c) {
+  const x=c.getContext('2d'); x.clearRect(0,0,128,128);
+  x.fillStyle='rgba(10,20,40,0.9)'; x.roundRect(4,4,120,120,8); x.fill();
+  x.strokeStyle='rgba(64,224,128,0.4)'; x.lineWidth=2; x.roundRect(4,4,120,120,8); x.stroke();
+  x.strokeStyle='rgba(64,224,128,0.6)'; x.lineWidth=2;
+  x.beginPath(); x.ellipse(64,28,28,10,0,0,Math.PI*2); x.stroke();
+  x.beginPath(); x.ellipse(64,100,28,10,0,0,Math.PI*2); x.stroke();
+  x.beginPath(); x.moveTo(36,28); x.lineTo(36,100); x.stroke();
+  x.beginPath(); x.moveTo(92,28); x.lineTo(92,100); x.stroke();
+  x.strokeStyle='rgba(64,224,128,0.25)'; x.setLineDash([3,3]);
+  x.beginPath(); x.moveTo(64,15); x.lineTo(64,113); x.stroke(); x.setLineDash([]);
+  x.font='bold 16px sans-serif'; x.fillStyle='rgba(64,224,128,0.6)'; x.textAlign='center'; x.fillText('\u2225',105,25);
 }
-
-function drawCylPerpIcon(canvas) {
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, 128, 128);
-  ctx.fillStyle = 'rgba(10, 20, 40, 0.9)';
-  ctx.roundRect(4, 4, 120, 120, 8); ctx.fill();
-  ctx.strokeStyle = 'rgba(64, 224, 128, 0.4)'; ctx.lineWidth = 2;
-  ctx.roundRect(4, 4, 120, 120, 8); ctx.stroke();
-  const cy = 64;
-  ctx.strokeStyle = 'rgba(64,224,128,0.6)'; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.ellipse(28,cy,10,28,0,0,Math.PI*2); ctx.stroke();
-  ctx.beginPath(); ctx.ellipse(100,cy,10,28,0,0,Math.PI*2); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(28,cy-28); ctx.lineTo(100,cy-28); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(28,cy+28); ctx.lineTo(100,cy+28); ctx.stroke();
-  ctx.strokeStyle = 'rgba(64,224,128,0.25)'; ctx.setLineDash([3,3]);
-  ctx.beginPath(); ctx.moveTo(15,cy); ctx.lineTo(113,cy); ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.font = 'bold 16px sans-serif'; ctx.fillStyle = 'rgba(64,224,128,0.6)'; ctx.textAlign = 'center';
-  ctx.fillText('\u22A5', 105, 25);
+function drawCylPerpIcon(c) {
+  const x=c.getContext('2d'); x.clearRect(0,0,128,128);
+  x.fillStyle='rgba(10,20,40,0.9)'; x.roundRect(4,4,120,120,8); x.fill();
+  x.strokeStyle='rgba(64,224,128,0.4)'; x.lineWidth=2; x.roundRect(4,4,120,120,8); x.stroke();
+  x.strokeStyle='rgba(64,224,128,0.6)'; x.lineWidth=2;
+  x.beginPath(); x.ellipse(28,64,10,28,0,0,Math.PI*2); x.stroke();
+  x.beginPath(); x.ellipse(100,64,10,28,0,0,Math.PI*2); x.stroke();
+  x.beginPath(); x.moveTo(28,36); x.lineTo(100,36); x.stroke();
+  x.beginPath(); x.moveTo(28,92); x.lineTo(100,92); x.stroke();
+  x.strokeStyle='rgba(64,224,128,0.25)'; x.setLineDash([3,3]);
+  x.beginPath(); x.moveTo(15,64); x.lineTo(113,64); x.stroke(); x.setLineDash([]);
+  x.font='bold 16px sans-serif'; x.fillStyle='rgba(64,224,128,0.6)'; x.textAlign='center'; x.fillText('\u22A5',105,25);
 }
-
-function drawResetIcon(canvas) {
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, 128, 128);
-  ctx.fillStyle = 'rgba(10, 20, 40, 0.9)';
-  ctx.roundRect(4, 4, 120, 120, 8); ctx.fill();
-  ctx.strokeStyle = 'rgba(122, 155, 181, 0.4)'; ctx.lineWidth = 2;
-  ctx.roundRect(4, 4, 120, 120, 8); ctx.stroke();
-  const cx=64, cy=58;
-  ctx.strokeStyle = 'rgba(122,155,181,0.7)'; ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.arc(cx,cy,25,-Math.PI*0.3,Math.PI*1.3); ctx.stroke();
-  ctx.fillStyle = 'rgba(122,155,181,0.7)';
-  const a=-Math.PI*0.3, ax=cx+Math.cos(a)*25, ay=cy+Math.sin(a)*25;
-  ctx.beginPath(); ctx.moveTo(ax+8,ay-2); ctx.lineTo(ax-2,ay-8); ctx.lineTo(ax+2,ay+6); ctx.fill();
-  ctx.font = '14px Share Tech Mono, monospace'; ctx.fillStyle = 'rgba(122,155,181,0.5)'; ctx.textAlign = 'center';
-  ctx.fillText('RESET', cx, cy+42);
+function drawResetIcon(c) {
+  const x=c.getContext('2d'); x.clearRect(0,0,128,128);
+  x.fillStyle='rgba(10,20,40,0.9)'; x.roundRect(4,4,120,120,8); x.fill();
+  x.strokeStyle='rgba(122,155,181,0.4)'; x.lineWidth=2; x.roundRect(4,4,120,120,8); x.stroke();
+  x.strokeStyle='rgba(122,155,181,0.7)'; x.lineWidth=3;
+  x.beginPath(); x.arc(64,58,25,-Math.PI*0.3,Math.PI*1.3); x.stroke();
+  x.fillStyle='rgba(122,155,181,0.7)';
+  const a=-Math.PI*0.3, ax=64+Math.cos(a)*25, ay=58+Math.sin(a)*25;
+  x.beginPath(); x.moveTo(ax+8,ay-2); x.lineTo(ax-2,ay-8); x.lineTo(ax+2,ay+6); x.fill();
+  x.font='14px Share Tech Mono'; x.fillStyle='rgba(122,155,181,0.5)'; x.textAlign='center'; x.fillText('RESET',64,100);
 }
 
 // ═══ VR CONTROLLERS ═══
-const controller0 = renderer.xr.getController(0);
-const controller1 = renderer.xr.getController(1);
-scene.add(controller0); scene.add(controller1);
-
-const controllerModelFactory = new XRControllerModelFactory();
-const grip0 = renderer.xr.getControllerGrip(0);
-grip0.add(controllerModelFactory.createControllerModel(grip0)); scene.add(grip0);
-const grip1 = renderer.xr.getControllerGrip(1);
-grip1.add(controllerModelFactory.createControllerModel(grip1)); scene.add(grip1);
-
-function createControllerRay() {
-  const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,-3)]);
-  return new THREE.Line(geo, new THREE.LineBasicMaterial({ color: CONFIG.cyan, transparent: true, opacity: 0.4 }));
+const c0 = renderer.xr.getController(0), c1 = renderer.xr.getController(1);
+scene.add(c0); scene.add(c1);
+const cmf = new XRControllerModelFactory();
+const g0 = renderer.xr.getControllerGrip(0); g0.add(cmf.createControllerModel(g0)); scene.add(g0);
+const g1 = renderer.xr.getControllerGrip(1); g1.add(cmf.createControllerModel(g1)); scene.add(g1);
+function mkRay() {
+  return new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0,0,-3)]),
+    new THREE.LineBasicMaterial({ color: CONFIG.cyan, transparent: true, opacity: 0.4 }));
 }
-controller0.add(createControllerRay());
-controller1.add(createControllerRay());
+c0.add(mkRay()); c1.add(mkRay());
 
-const controllerState = { grabbing: null, prevControllerPos: new THREE.Vector3() };
-const raycaster = new THREE.Raycaster();
-const tempMatrix = new THREE.Matrix4();
+const cState = { grabbing: null, prev: new THREE.Vector3() };
+const rc = new THREE.Raycaster(), tm = new THREE.Matrix4();
 
-function getControllerRay(controller) {
-  tempMatrix.identity().extractRotation(controller.matrixWorld);
-  raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
-  raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+function getRay(ctrl) {
+  tm.identity().extractRotation(ctrl.matrixWorld);
+  rc.ray.origin.setFromMatrixPosition(ctrl.matrixWorld);
+  rc.ray.direction.set(0,0,-1).applyMatrix4(tm);
 }
-
-function onSelectStart(event) {
-  const controller = event.target;
-  getControllerRay(controller);
-  const buttonHits = raycaster.intersectObjects(panelButtons);
-  if (buttonHits.length > 0) { buttonHits[0].object.userData.callback(); return; }
+function onSS(e) {
+  getRay(e.target);
+  const bh = rc.intersectObjects(panelButtons);
+  if (bh.length > 0) { bh[0].object.userData.callback(); return; }
   if (surfaceMesh) {
-    const surfaceHits = raycaster.intersectObject(surfaceMesh);
-    if (surfaceHits.length > 0) {
-      controllerState.grabbing = controller;
-      controllerState.prevControllerPos.setFromMatrixPosition(controller.matrixWorld);
-    }
+    const sh = rc.intersectObject(surfaceMesh);
+    if (sh.length > 0) { cState.grabbing = e.target; cState.prev.setFromMatrixPosition(e.target.matrixWorld); }
   }
 }
-function onSelectEnd(event) { if (controllerState.grabbing === event.target) controllerState.grabbing = null; }
-
-controller0.addEventListener('selectstart', onSelectStart); controller0.addEventListener('selectend', onSelectEnd);
-controller1.addEventListener('selectstart', onSelectStart); controller1.addEventListener('selectend', onSelectEnd);
-controller0.addEventListener('squeezestart', onSelectStart); controller0.addEventListener('squeezeend', onSelectEnd);
-controller1.addEventListener('squeezestart', onSelectStart); controller1.addEventListener('squeezeend', onSelectEnd);
+function onSE(e) { if (cState.grabbing === e.target) cState.grabbing = null; }
+c0.addEventListener('selectstart', onSS); c0.addEventListener('selectend', onSE);
+c1.addEventListener('selectstart', onSS); c1.addEventListener('selectend', onSE);
+c0.addEventListener('squeezestart', onSS); c0.addEventListener('squeezeend', onSE);
+c1.addEventListener('squeezestart', onSS); c1.addEventListener('squeezeend', onSE);
 
 // ═══ DESKTOP MOUSE ═══
-const mouse = new THREE.Vector2();
-const mouseRaycaster = new THREE.Raycaster();
-let isMouseDragging = false;
-let mouseDragPlane = new THREE.Plane();
-let mouseDragOffset = new THREE.Vector3();
+const mouse = new THREE.Vector2(), mrc = new THREE.Raycaster();
+let mDrag = false, mPlane = new THREE.Plane(), mOff = new THREE.Vector3();
 
-renderer.domElement.addEventListener('pointerdown', (e) => {
-  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-  mouseRaycaster.setFromCamera(mouse, camera);
-  if (surfaceMesh) {
-    const hits = mouseRaycaster.intersectObject(surfaceMesh);
-    if (hits.length > 0) {
-      isMouseDragging = true; orbitControls.enabled = false;
-      const camDir = new THREE.Vector3(); camera.getWorldDirection(camDir);
-      mouseDragPlane.setFromNormalAndCoplanarPoint(camDir, surfaceMesh.position);
-      const intersection = new THREE.Vector3();
-      mouseRaycaster.ray.intersectPlane(mouseDragPlane, intersection);
-      mouseDragOffset.copy(surfaceMesh.position).sub(intersection);
-    }
+renderer.domElement.addEventListener('pointerdown', e => {
+  mouse.set((e.clientX/window.innerWidth)*2-1, -(e.clientY/window.innerHeight)*2+1);
+  mrc.setFromCamera(mouse, camera);
+  if (surfaceMesh && mrc.intersectObject(surfaceMesh).length > 0) {
+    mDrag = true; orbitControls.enabled = false;
+    const cd = new THREE.Vector3(); camera.getWorldDirection(cd);
+    mPlane.setFromNormalAndCoplanarPoint(cd, surfaceMesh.position);
+    const ix = new THREE.Vector3(); mrc.ray.intersectPlane(mPlane, ix);
+    mOff.copy(surfaceMesh.position).sub(ix);
   }
 });
-renderer.domElement.addEventListener('pointermove', (e) => {
-  if (!isMouseDragging) return;
-  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-  mouseRaycaster.setFromCamera(mouse, camera);
-  const intersection = new THREE.Vector3();
-  if (mouseRaycaster.ray.intersectPlane(mouseDragPlane, intersection)) {
-    const newPos = intersection.add(mouseDragOffset);
-    state.surfaceOffset.copy(newPos).sub(CONFIG.chargeOrigin);
-    moveSurface(newPos); updateArrows();
+renderer.domElement.addEventListener('pointermove', e => {
+  if (!mDrag) return;
+  mouse.set((e.clientX/window.innerWidth)*2-1, -(e.clientY/window.innerHeight)*2+1);
+  mrc.setFromCamera(mouse, camera);
+  const ix = new THREE.Vector3();
+  if (mrc.ray.intersectPlane(mPlane, ix)) {
+    const np = ix.add(mOff);
+    state.surfaceOffset.copy(np).sub(CONFIG.chargeOrigin);
+    moveSurface(np); updateArrows();
   }
 });
-renderer.domElement.addEventListener('pointerup', () => {
-  if (isMouseDragging) { isMouseDragging = false; orbitControls.enabled = true; }
-});
+renderer.domElement.addEventListener('pointerup', () => { if (mDrag) { mDrag = false; orbitControls.enabled = true; } });
 
-// ═══ STATE MANAGEMENT ═══
-function moveSurface(worldPos) {
-  surfaceGroup.children.forEach(child => child.position.copy(worldPos));
+// ═══ MOVE / STATE ═══
+function moveSurface(wp) {
+  surfaceGroup.children.forEach(ch => ch.position.copy(wp));
 }
 
 window.selectDistribution = function(type) {
   state.distribution = type;
   document.querySelectorAll('#desktop-panel button').forEach(b => b.classList.remove('active'));
-  const btn = document.getElementById('btn-' + type);
-  if (btn) btn.classList.add('active');
-  if (state.surface) { const sb = document.getElementById('btn-' + state.surface); if (sb) sb.classList.add('active'); }
-  if (type === 'point') createPointCharge();
-  else if (type === 'line') createLineCharge();
+  const btn = document.getElementById('btn-'+type); if (btn) btn.classList.add('active');
+  if (state.surface) { const sb = document.getElementById('btn-'+state.surface); if (sb) sb.classList.add('active'); }
+  if (type === 'point') createPointCharge(); else if (type === 'line') createLineCharge();
   updateArrows();
 };
-
 window.selectSurface = function(type) {
   state.surface = type;
-  document.querySelectorAll('#desktop-panel button').forEach(b => {
-    if (!['btn-point', 'btn-line'].includes(b.id)) b.classList.remove('active');
-  });
-  const btn = document.getElementById('btn-' + type);
-  if (btn) btn.classList.add('active');
-  if (state.distribution) { const db = document.getElementById('btn-' + state.distribution); if (db) db.classList.add('active'); }
+  document.querySelectorAll('#desktop-panel button').forEach(b => { if (!['btn-point','btn-line'].includes(b.id)) b.classList.remove('active'); });
+  const btn = document.getElementById('btn-'+type); if (btn) btn.classList.add('active');
+  if (state.distribution) { const db = document.getElementById('btn-'+state.distribution); if (db) db.classList.add('active'); }
   createGaussianSurface(type); updateArrows();
 };
-
 window.resetSurfacePosition = function() {
   state.surfaceOffset.set(0.6, 0.3, 0.4);
   if (state.surface) { createGaussianSurface(state.surface); updateArrows(); }
 };
 
-// ═══ VR DRAG UPDATE ═══
-function updateVRDragging() {
-  if (!controllerState.grabbing || !surfaceMesh) return;
-  const controller = controllerState.grabbing;
-  const currentPos = new THREE.Vector3().setFromMatrixPosition(controller.matrixWorld);
-  const delta = currentPos.clone().sub(controllerState.prevControllerPos);
-  controllerState.prevControllerPos.copy(currentPos);
+function updateVRDrag() {
+  if (!cState.grabbing || !surfaceMesh) return;
+  const cp = new THREE.Vector3().setFromMatrixPosition(cState.grabbing.matrixWorld);
+  const delta = cp.clone().sub(cState.prev); cState.prev.copy(cp);
   state.surfaceOffset.add(delta);
   moveSurface(getSurfaceCenter()); updateArrows();
 }
@@ -842,39 +697,30 @@ function updateVRDragging() {
 const clock = new THREE.Clock();
 function animate() {
   const t = clock.getElapsedTime();
-  
-  // Scene labels face camera (NOT panel labels — those stay fixed to panel)
-  distributionGroup.children.forEach(child => {
-    if (child.name === 'sceneLabel') child.quaternion.copy(camera.quaternion);
-  });
-  
-  // Pulse surface when uniform
+  distributionGroup.children.forEach(ch => { if (ch.name === 'sceneLabel') ch.quaternion.copy(camera.quaternion); });
   if (state.isUniform) {
-    surfaceGroup.children.forEach(child => {
-      if (child.isMesh && child.name === 'gaussianSurface') {
-        child.material.opacity = 0.08 + 0.06 * Math.sin(t * 3);
-        child.material.emissiveIntensity = 0.1 + 0.08 * Math.sin(t * 3);
-      }
+    surfaceGroup.children.forEach(ch => {
+      if (ch.isGroup) ch.children.forEach(c => {
+        if (c.isMesh && c.material.visible !== false) {
+          c.material.opacity = 0.06 + 0.06 * Math.sin(t * 3);
+        }
+      });
     });
   }
-  
-  updateVRDragging();
+  updateVRDrag();
   if (!renderer.xr.isPresenting) orbitControls.update();
   renderer.render(scene, camera);
 }
 renderer.setAnimationLoop(animate);
-
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
 // ═══ INIT ═══
 createVRPanel();
 selectDistribution('point');
 selectSurface('sphere');
-
 </script>
 </body>
 </html>
