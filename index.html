@@ -80,8 +80,7 @@ const CONFIG = {
   sphereNPhi: 12,    // longitude divisions
   cylNAround: 12,    // circumferential divisions
   cylNAlong: 6,      // axial divisions (barrel)
-  cylCapNRings: 3,   // radial rings on endcaps
-  cylCapNWedges: 12, // angular wedges on endcaps
+  cylCapNWedges: 12, // pie slices on endcaps
   // Arrow appearance
   arrowMinLength: 0.02,
   arrowMaxLength: 0.40,
@@ -135,10 +134,10 @@ const arrowGroup = new THREE.Group(); scene.add(arrowGroup);
 
 // ═══ LABELS ═══
 function makePanelLabel(text, color, fontSize) {
-  const c = document.createElement('canvas'); c.width = 512; c.height = 64;
-  const ctx = c.getContext('2d'); ctx.font = (fontSize||24) + 'px Share Tech Mono, monospace';
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 128;
+  const ctx = c.getContext('2d'); ctx.font = 'bold ' + ((fontSize||24)*2) + 'px Share Tech Mono, monospace';
   ctx.fillStyle = '#' + new THREE.Color(color).getHexString();
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, 256, 32);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, 512, 64);
   const tex = new THREE.CanvasTexture(c); tex.minFilter = THREE.LinearFilter;
   return new THREE.Mesh(new THREE.PlaneGeometry(0.25, 0.03),
     new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide, depthWrite: false }));
@@ -240,6 +239,29 @@ function makeQuadPatch(p0, p1, p2, p3) {
   return { geo, edgeGeo, center, normal };
 }
 
+// Triangle patch for pie slices (p0=tip, p1,p2=rim)
+function makeTriPatch(p0, p1, p2) {
+  const center = new THREE.Vector3().add(p0).add(p1).add(p2).multiplyScalar(1/3);
+  const v1 = new THREE.Vector3().subVectors(p1, p0);
+  const v2 = new THREE.Vector3().subVectors(p2, p0);
+  const normal = new THREE.Vector3().crossVectors(v1, v2).normalize();
+
+  const geo = new THREE.BufferGeometry();
+  const verts = new Float32Array([p0.x,p0.y,p0.z, p1.x,p1.y,p1.z, p2.x,p2.y,p2.z]);
+  geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+  geo.computeVertexNormals();
+
+  const edgeGeo = new THREE.BufferGeometry();
+  const edgeVerts = new Float32Array([
+    p0.x,p0.y,p0.z, p1.x,p1.y,p1.z,
+    p1.x,p1.y,p1.z, p2.x,p2.y,p2.z,
+    p2.x,p2.y,p2.z, p0.x,p0.y,p0.z,
+  ]);
+  edgeGeo.setAttribute('position', new THREE.BufferAttribute(edgeVerts, 3));
+
+  return { geo, edgeGeo, center, normal };
+}
+
 // Sphere on lat/lon: point from (theta, phi)
 function spherePoint(R, theta, phi) {
   return new THREE.Vector3(
@@ -277,7 +299,7 @@ function cylBarrelPoint(R, H, tFrac, aFrac, isPerp) {
   return new THREE.Vector3(R * Math.cos(angle), y, R * Math.sin(angle));
 }
 
-function buildCylinderPatches(R, H, nAround, nAlong, capRings, capWedges, isPerp) {
+function buildCylinderPatches(R, H, nAround, nAlong, capWedges, isPerp) {
   const patches = [];
 
   // Barrel
@@ -296,33 +318,27 @@ function buildCylinderPatches(R, H, nAround, nAlong, capRings, capWedges, isPerp
     }
   }
 
-  // Endcaps (polar grid: rings × wedges)
+  // Endcaps (simple pie slices from center to rim)
   for (const sign of [-1, 1]) {
     const hPos = sign * H / 2;
-    for (let ri = 0; ri < capRings; ri++) {
-      const r0 = (ri / capRings) * R;
-      const r1 = ((ri + 1) / capRings) * R;
-      for (let wi = 0; wi < capWedges; wi++) {
-        const a0 = (wi / capWedges) * Math.PI * 2;
-        const a1 = ((wi + 1) / capWedges) * Math.PI * 2;
-        let p0, p1, p2, p3;
-        if (isPerp) {
-          p0 = new THREE.Vector3(hPos, r0 * Math.cos(a0), r0 * Math.sin(a0));
-          p1 = new THREE.Vector3(hPos, r0 * Math.cos(a1), r0 * Math.sin(a1));
-          p2 = new THREE.Vector3(hPos, r1 * Math.cos(a1), r1 * Math.sin(a1));
-          p3 = new THREE.Vector3(hPos, r1 * Math.cos(a0), r1 * Math.sin(a0));
-        } else {
-          p0 = new THREE.Vector3(r0 * Math.cos(a0), hPos, r0 * Math.sin(a0));
-          p1 = new THREE.Vector3(r0 * Math.cos(a1), hPos, r0 * Math.sin(a1));
-          p2 = new THREE.Vector3(r1 * Math.cos(a1), hPos, r1 * Math.sin(a1));
-          p3 = new THREE.Vector3(r1 * Math.cos(a0), hPos, r1 * Math.sin(a0));
-        }
-        // Flip winding for bottom cap so normal points outward
-        if (sign === -1) {
-          patches.push(makeQuadPatch(p0, p3, p2, p1));
-        } else {
-          patches.push(makeQuadPatch(p0, p1, p2, p3));
-        }
+    for (let wi = 0; wi < capWedges; wi++) {
+      const a0 = (wi / capWedges) * Math.PI * 2;
+      const a1 = ((wi + 1) / capWedges) * Math.PI * 2;
+      let pCenter, pRim0, pRim1;
+      if (isPerp) {
+        pCenter = new THREE.Vector3(hPos, 0, 0);
+        pRim0 = new THREE.Vector3(hPos, R * Math.cos(a0), R * Math.sin(a0));
+        pRim1 = new THREE.Vector3(hPos, R * Math.cos(a1), R * Math.sin(a1));
+      } else {
+        pCenter = new THREE.Vector3(0, hPos, 0);
+        pRim0 = new THREE.Vector3(R * Math.cos(a0), hPos, R * Math.sin(a0));
+        pRim1 = new THREE.Vector3(R * Math.cos(a1), hPos, R * Math.sin(a1));
+      }
+      // Winding: top cap normal points +, bottom cap normal points -
+      if (sign === 1) {
+        patches.push(makeTriPatch(pCenter, pRim0, pRim1));
+      } else {
+        patches.push(makeTriPatch(pCenter, pRim1, pRim0));
       }
     }
   }
@@ -344,10 +360,10 @@ function createGaussianSurface(type) {
     patches = buildSpherePatchGrid(CONFIG.sphereRadius, CONFIG.sphereNTheta, CONFIG.sphereNPhi);
   } else if (type === 'cylPar') {
     patches = buildCylinderPatches(CONFIG.cylinderRadius, CONFIG.cylinderHeight,
-      CONFIG.cylNAround, CONFIG.cylNAlong, CONFIG.cylCapNRings, CONFIG.cylCapNWedges, false);
+      CONFIG.cylNAround, CONFIG.cylNAlong, CONFIG.cylCapNWedges, false);
   } else if (type === 'cylPerp') {
     patches = buildCylinderPatches(CONFIG.cylinderRadius, CONFIG.cylinderHeight,
-      CONFIG.cylNAround, CONFIG.cylNAlong, CONFIG.cylCapNRings, CONFIG.cylCapNWedges, true);
+      CONFIG.cylNAround, CONFIG.cylNAlong, CONFIG.cylCapNWedges, true);
   }
 
   const fillMat = new THREE.MeshBasicMaterial({
@@ -497,13 +513,13 @@ function createVRPanel() {
 
   const t = makePanelLabel('SYMMETRY EXPLORER', CONFIG.cyan, 28);
   t.scale.set(1.8,1.8,1); t.position.set(0, 0.22, 0.005); vrPanel.add(t);
-  const dl = makePanelLabel('DISTRIBUTION', 0x556b7a, 22);
+  const dl = makePanelLabel('DISTRIBUTION', 0x90b8d0, 22);
   dl.scale.set(1.2,1.2,1); dl.position.set(0, 0.14, 0.005); vrPanel.add(dl);
 
   mkVRBtn(vrPanel, -0.1, 0.06, 'point', drawPointIcon, () => selectDistribution('point'));
   mkVRBtn(vrPanel, 0.1, 0.06, 'line', drawLineIcon, () => selectDistribution('line'));
 
-  const sl = makePanelLabel('GAUSSIAN SURFACE', 0x556b7a, 22);
+  const sl = makePanelLabel('GAUSSIAN SURFACE', 0x90b8d0, 22);
   sl.scale.set(1.2,1.2,1); sl.position.set(0, -0.04, 0.005); vrPanel.add(sl);
 
   mkVRBtn(vrPanel, -0.2, -0.12, 'sphere', drawSphereIcon, () => selectSurface('sphere'));
@@ -513,7 +529,7 @@ function createVRPanel() {
 }
 
 function mkVRBtn(parent, x, y, id, drawFn, cb) {
-  const c = document.createElement('canvas'); c.width = 128; c.height = 128;
+  const c = document.createElement('canvas'); c.width = 256; c.height = 256;
   drawFn(c);
   const tex = new THREE.CanvasTexture(c); tex.minFilter = THREE.LinearFilter;
   const m = new THREE.Mesh(new THREE.PlaneGeometry(0.08, 0.08),
@@ -524,7 +540,7 @@ function mkVRBtn(parent, x, y, id, drawFn, cb) {
 
 // ═══ ICONS ═══
 function drawPointIcon(c) {
-  const x = c.getContext('2d'); x.clearRect(0,0,128,128);
+  const x = c.getContext('2d'); x.clearRect(0,0,256,256); x.scale(2,2);
   x.fillStyle='rgba(10,20,40,0.9)'; x.roundRect(4,4,120,120,8); x.fill();
   x.strokeStyle='rgba(255,48,64,0.4)'; x.lineWidth=2; x.roundRect(4,4,120,120,8); x.stroke();
   x.fillStyle='#ff3040'; x.beginPath(); x.arc(64,64,14,0,Math.PI*2); x.fill();
@@ -535,7 +551,7 @@ function drawPointIcon(c) {
     x.beginPath(); x.moveTo(64+Math.cos(a)*20,64+Math.sin(a)*20); x.lineTo(64+Math.cos(a)*42,64+Math.sin(a)*42); x.stroke();}
 }
 function drawLineIcon(c) {
-  const x = c.getContext('2d'); x.clearRect(0,0,128,128);
+  const x = c.getContext('2d'); x.clearRect(0,0,256,256); x.scale(2,2);
   x.fillStyle='rgba(10,20,40,0.9)'; x.roundRect(4,4,120,120,8); x.fill();
   x.strokeStyle='rgba(240,160,48,0.4)'; x.lineWidth=2; x.roundRect(4,4,120,120,8); x.stroke();
   const g=x.createLinearGradient(64,15,64,113);
@@ -550,7 +566,7 @@ function drawLineIcon(c) {
   x.font='18px serif'; x.fillStyle='#f0a030'; x.textAlign='center'; x.fillText('\u03BB',95,40);
 }
 function drawSphereIcon(c) {
-  const x=c.getContext('2d'); x.clearRect(0,0,128,128);
+  const x=c.getContext('2d'); x.clearRect(0,0,256,256); x.scale(2,2);
   x.fillStyle='rgba(10,20,40,0.9)'; x.roundRect(4,4,120,120,8); x.fill();
   x.strokeStyle='rgba(64,224,128,0.4)'; x.lineWidth=2; x.roundRect(4,4,120,120,8); x.stroke();
   x.strokeStyle='rgba(64,224,128,0.7)'; x.lineWidth=2;
@@ -560,7 +576,7 @@ function drawSphereIcon(c) {
   x.beginPath(); x.ellipse(64,64,11,36,0,0,Math.PI*2); x.stroke();
 }
 function drawCylParIcon(c) {
-  const x=c.getContext('2d'); x.clearRect(0,0,128,128);
+  const x=c.getContext('2d'); x.clearRect(0,0,256,256); x.scale(2,2);
   x.fillStyle='rgba(10,20,40,0.9)'; x.roundRect(4,4,120,120,8); x.fill();
   x.strokeStyle='rgba(64,224,128,0.4)'; x.lineWidth=2; x.roundRect(4,4,120,120,8); x.stroke();
   x.strokeStyle='rgba(64,224,128,0.6)'; x.lineWidth=2;
@@ -573,7 +589,7 @@ function drawCylParIcon(c) {
   x.font='bold 16px sans-serif'; x.fillStyle='rgba(64,224,128,0.6)'; x.textAlign='center'; x.fillText('\u2225',105,25);
 }
 function drawCylPerpIcon(c) {
-  const x=c.getContext('2d'); x.clearRect(0,0,128,128);
+  const x=c.getContext('2d'); x.clearRect(0,0,256,256); x.scale(2,2);
   x.fillStyle='rgba(10,20,40,0.9)'; x.roundRect(4,4,120,120,8); x.fill();
   x.strokeStyle='rgba(64,224,128,0.4)'; x.lineWidth=2; x.roundRect(4,4,120,120,8); x.stroke();
   x.strokeStyle='rgba(64,224,128,0.6)'; x.lineWidth=2;
@@ -586,7 +602,7 @@ function drawCylPerpIcon(c) {
   x.font='bold 16px sans-serif'; x.fillStyle='rgba(64,224,128,0.6)'; x.textAlign='center'; x.fillText('\u22A5',105,25);
 }
 function drawResetIcon(c) {
-  const x=c.getContext('2d'); x.clearRect(0,0,128,128);
+  const x=c.getContext('2d'); x.clearRect(0,0,256,256); x.scale(2,2);
   x.fillStyle='rgba(10,20,40,0.9)'; x.roundRect(4,4,120,120,8); x.fill();
   x.strokeStyle='rgba(122,155,181,0.4)'; x.lineWidth=2; x.roundRect(4,4,120,120,8); x.stroke();
   x.strokeStyle='rgba(122,155,181,0.7)'; x.lineWidth=3;
