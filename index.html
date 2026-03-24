@@ -384,34 +384,47 @@ function createGaussianSurface(type) {
 
   // ── Symmetry indicators ──
   const symColor = CONFIG.cyan;
+  const symMat = new THREE.MeshBasicMaterial({ color: symColor });
+
   if (type === 'sphere') {
-    // Center dot
-    const dotGeo = new THREE.SphereGeometry(0.02, 12, 12);
-    const dotMat = new THREE.MeshBasicMaterial({ color: symColor });
-    const dot = new THREE.Mesh(dotGeo, dotMat);
-    dot.name = 'symmetryIndicator';
-    container.add(dot); // at (0,0,0) = center of sphere
+    // 3D plus sign (three perpendicular thin cylinders)
+    const plusGroup = new THREE.Group();
+    plusGroup.name = 'symmetryIndicator';
+    const armLen = 0.06, armRad = 0.005;
+    const armGeo = new THREE.CylinderGeometry(armRad, armRad, armLen * 2, 8);
+    // Y arm (vertical)
+    plusGroup.add(new THREE.Mesh(armGeo, symMat));
+    // X arm (horizontal)
+    const xArm = new THREE.Mesh(armGeo.clone(), symMat);
+    xArm.rotation.z = Math.PI / 2;
+    plusGroup.add(xArm);
+    // Z arm (depth)
+    const zArm = new THREE.Mesh(armGeo.clone(), symMat);
+    zArm.rotation.x = Math.PI / 2;
+    plusGroup.add(zArm);
+    container.add(plusGroup);
   } else {
-    // Dashed axis line extending 20% past endcaps
-    const ext = CONFIG.cylinderHeight * 0.6; // half-height + 20%
-    const dashLen = 0.04, gapLen = 0.03;
-    const totalLen = ext * 2;
-    const segments = Math.floor(totalLen / (dashLen + gapLen));
-    const dashPoints = [];
-    for (let i = 0; i < segments; i++) {
-      const start = -ext + i * (dashLen + gapLen);
-      const end = start + dashLen;
+    // Thick dashed axis using small cylinders with gaps
+    const ext = CONFIG.cylinderHeight * 0.6;
+    const dashLen = 0.05, gapLen = 0.035, dashRad = 0.008;
+    const dashGeo = new THREE.CylinderGeometry(dashRad, dashRad, dashLen, 8);
+    const axisGroup = new THREE.Group();
+    axisGroup.name = 'symmetryIndicator';
+
+    let pos = -ext;
+    while (pos + dashLen <= ext) {
+      const seg = new THREE.Mesh(dashGeo.clone(), symMat.clone());
+      const mid = pos + dashLen / 2;
       if (type === 'cylPerp') {
-        dashPoints.push(new THREE.Vector3(start, 0, 0), new THREE.Vector3(Math.min(end, ext), 0, 0));
+        seg.rotation.z = Math.PI / 2;
+        seg.position.set(mid, 0, 0);
       } else {
-        dashPoints.push(new THREE.Vector3(0, start, 0), new THREE.Vector3(0, Math.min(end, ext), 0));
+        seg.position.set(0, mid, 0);
       }
+      axisGroup.add(seg);
+      pos += dashLen + gapLen;
     }
-    const axisGeo = new THREE.BufferGeometry().setFromPoints(dashPoints);
-    const axisMat = new THREE.LineBasicMaterial({ color: symColor, transparent: true, opacity: 0.7 });
-    const axisLine = new THREE.LineSegments(axisGeo, axisMat);
-    axisLine.name = 'symmetryIndicator';
-    container.add(axisLine);
+    container.add(axisGroup);
   }
 
   // Invisible interaction sphere/box for raycasting drag
@@ -532,39 +545,42 @@ function updateStatusBar() {
 
 // ═══ VR PANEL ═══
 const vrPanel = new THREE.Group();
-vrPanel.position.set(-0.9, 1.4, -1.5); vrPanel.rotation.y = 0.3;
+vrPanel.position.set(-0.7, 1.4, -1.0); vrPanel.rotation.y = 0.35;
 scene.add(vrPanel);
 const panelButtons = [];
+let panelBackdrop = null; // for drag detection
 
 function createVRPanel() {
-  const bg = new THREE.Mesh(new THREE.PlaneGeometry(0.85, 0.72),
+  const bg = new THREE.Mesh(new THREE.PlaneGeometry(0.95, 0.80),
     new THREE.MeshBasicMaterial({ color: 0x0c1428, transparent: true, opacity: 0.92, side: THREE.DoubleSide }));
+  bg.name = 'panelBackdrop';
   vrPanel.add(bg);
+  panelBackdrop = bg;
   vrPanel.add(new THREE.LineSegments(new THREE.EdgesGeometry(bg.geometry),
     new THREE.LineBasicMaterial({ color: CONFIG.cyan, transparent: true, opacity: 0.6 })));
 
   const t = makePanelLabel('SYMMETRY EXPLORER', CONFIG.cyan, 32);
-  t.scale.set(2.4,2.4,1); t.position.set(0, 0.29, 0.005); vrPanel.add(t);
+  t.scale.set(2.8,2.8,1); t.position.set(0, 0.33, 0.005); vrPanel.add(t);
   const dl = makePanelLabel('DISTRIBUTION', 0xe0ecf4, 26);
-  dl.scale.set(1.5,1.5,1); dl.position.set(0, 0.19, 0.005); vrPanel.add(dl);
+  dl.scale.set(1.8,1.8,1); dl.position.set(0, 0.22, 0.005); vrPanel.add(dl);
 
-  mkVRBtn(vrPanel, -0.14, 0.07, 'point', drawPointIcon, () => selectDistribution('point'));
-  mkVRBtn(vrPanel, 0.14, 0.07, 'line', drawLineIcon, () => selectDistribution('line'));
+  mkVRBtn(vrPanel, -0.16, 0.09, 'point', drawPointIcon, () => selectDistribution('point'));
+  mkVRBtn(vrPanel, 0.16, 0.09, 'line', drawLineIcon, () => selectDistribution('line'));
 
   const sl = makePanelLabel('GAUSSIAN SURFACE', 0xe0ecf4, 26);
-  sl.scale.set(1.5,1.5,1); sl.position.set(0, -0.06, 0.005); vrPanel.add(sl);
+  sl.scale.set(1.8,1.8,1); sl.position.set(0, -0.06, 0.005); vrPanel.add(sl);
 
-  mkVRBtn(vrPanel, -0.27, -0.18, 'sphere', drawSphereIcon, () => selectSurface('sphere'));
-  mkVRBtn(vrPanel, 0.0, -0.18, 'cylPar', drawCylParIcon, () => selectSurface('cylPar'));
-  mkVRBtn(vrPanel, 0.27, -0.18, 'cylPerp', drawCylPerpIcon, () => selectSurface('cylPerp'));
-  mkVRBtn(vrPanel, 0, -0.30, 'reset', drawResetIcon, () => resetSurfacePosition());
+  mkVRBtn(vrPanel, -0.30, -0.20, 'sphere', drawSphereIcon, () => selectSurface('sphere'));
+  mkVRBtn(vrPanel, 0.0, -0.20, 'cylPar', drawCylParIcon, () => selectSurface('cylPar'));
+  mkVRBtn(vrPanel, 0.30, -0.20, 'cylPerp', drawCylPerpIcon, () => selectSurface('cylPerp'));
+  mkVRBtn(vrPanel, 0, -0.34, 'reset', drawResetIcon, () => resetSurfacePosition());
 }
 
 function mkVRBtn(parent, x, y, id, drawFn, cb) {
   const c = document.createElement('canvas'); c.width = 256; c.height = 256;
   drawFn(c);
   const tex = new THREE.CanvasTexture(c); tex.minFilter = THREE.LinearFilter;
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 0.12),
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(0.14, 0.14),
     new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide }));
   m.position.set(x, y, 0.005); m.userData = { id, callback: cb };
   parent.add(m); panelButtons.push(m);
@@ -681,7 +697,7 @@ function mkRay() {
 }
 c0.add(mkRay()); c1.add(mkRay());
 
-const cState = { grabbing: null, prev: new THREE.Vector3() };
+const cState = { grabbing: null, prev: new THREE.Vector3(), panelGrab: null, panelPrev: new THREE.Vector3() };
 const rc = new THREE.Raycaster(), tm = new THREE.Matrix4();
 
 function getRay(ctrl) {
@@ -689,6 +705,8 @@ function getRay(ctrl) {
   rc.ray.origin.setFromMatrixPosition(ctrl.matrixWorld);
   rc.ray.direction.set(0,0,-1).applyMatrix4(tm);
 }
+
+// Trigger = select buttons or grab surface
 function onSS(e) {
   getRay(e.target);
   const bh = rc.intersectObjects(panelButtons);
@@ -699,10 +717,33 @@ function onSS(e) {
   }
 }
 function onSE(e) { if (cState.grabbing === e.target) cState.grabbing = null; }
+
+// Squeeze/grip = grab and move the panel
+function onSqueezeStart(e) {
+  getRay(e.target);
+  if (panelBackdrop) {
+    const ph = rc.intersectObject(panelBackdrop);
+    if (ph.length > 0) {
+      cState.panelGrab = e.target;
+      cState.panelPrev.setFromMatrixPosition(e.target.matrixWorld);
+      return;
+    }
+  }
+  // Fallback: also allow squeeze to grab surface
+  if (surfaceMesh) {
+    const sh = rc.intersectObject(surfaceMesh);
+    if (sh.length > 0) { cState.grabbing = e.target; cState.prev.setFromMatrixPosition(e.target.matrixWorld); }
+  }
+}
+function onSqueezeEnd(e) {
+  if (cState.panelGrab === e.target) cState.panelGrab = null;
+  if (cState.grabbing === e.target) cState.grabbing = null;
+}
+
 c0.addEventListener('selectstart', onSS); c0.addEventListener('selectend', onSE);
 c1.addEventListener('selectstart', onSS); c1.addEventListener('selectend', onSE);
-c0.addEventListener('squeezestart', onSS); c0.addEventListener('squeezeend', onSE);
-c1.addEventListener('squeezestart', onSS); c1.addEventListener('squeezeend', onSE);
+c0.addEventListener('squeezestart', onSqueezeStart); c0.addEventListener('squeezeend', onSqueezeEnd);
+c1.addEventListener('squeezestart', onSqueezeStart); c1.addEventListener('squeezeend', onSqueezeEnd);
 
 // ═══ DESKTOP MOUSE ═══
 const mouse = new THREE.Vector2(), mrc = new THREE.Raycaster();
@@ -758,11 +799,19 @@ window.resetSurfacePosition = function() {
 };
 
 function updateVRDrag() {
-  if (!cState.grabbing || !surfaceMesh) return;
-  const cp = new THREE.Vector3().setFromMatrixPosition(cState.grabbing.matrixWorld);
-  const delta = cp.clone().sub(cState.prev); cState.prev.copy(cp);
-  state.surfaceOffset.add(delta);
-  moveSurface(getSurfaceCenter()); updateArrows();
+  // Surface dragging
+  if (cState.grabbing && surfaceMesh) {
+    const cp = new THREE.Vector3().setFromMatrixPosition(cState.grabbing.matrixWorld);
+    const delta = cp.clone().sub(cState.prev); cState.prev.copy(cp);
+    state.surfaceOffset.add(delta);
+    moveSurface(getSurfaceCenter()); updateArrows();
+  }
+  // Panel dragging
+  if (cState.panelGrab) {
+    const cp = new THREE.Vector3().setFromMatrixPosition(cState.panelGrab.matrixWorld);
+    const delta = cp.clone().sub(cState.panelPrev); cState.panelPrev.copy(cp);
+    vrPanel.position.add(delta);
+  }
 }
 
 // ═══ ANIMATE ═══
@@ -772,17 +821,20 @@ function animate() {
   distributionGroup.children.forEach(ch => { if (ch.name === 'sceneLabel') ch.quaternion.copy(camera.quaternion); });
   if (state.isUniform) {
     surfaceGroup.children.forEach(ch => {
-      if (ch.isGroup) ch.children.forEach(c => {
-        if (c.isMesh && c.material.visible !== false && c.name !== 'symmetryIndicator') {
+      if (ch.isGroup) ch.traverse(c => {
+        // Pulse patch fills
+        if (c.isMesh && c.material.visible !== false && c.name !== 'symmetryIndicator' && !c.parent?.name?.includes('symmetry')) {
           c.material.opacity = 0.06 + 0.06 * Math.sin(t * 3);
         }
-        // Pulse symmetry indicator brightness
+      });
+      // Pulse symmetry indicator group
+      if (ch.isGroup) ch.children.forEach(c => {
         if (c.name === 'symmetryIndicator') {
-          if (c.isMesh) {
-            c.material.color.setHSL(0.48, 0.8, 0.5 + 0.2 * Math.sin(t * 3));
-          } else if (c.isLineSegments) {
-            c.material.opacity = 0.5 + 0.4 * Math.sin(t * 3);
-          }
+          c.traverse(m => {
+            if (m.isMesh && m.material) {
+              m.material.color.setHSL(0.48, 0.8, 0.5 + 0.2 * Math.sin(t * 3));
+            }
+          });
         }
       });
     });
