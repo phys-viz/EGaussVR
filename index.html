@@ -548,27 +548,38 @@ const vrPanel = new THREE.Group();
 vrPanel.position.set(-0.7, 1.4, -1.0); vrPanel.rotation.y = 0.35;
 scene.add(vrPanel);
 const panelButtons = [];
-let panelBackdrop = null; // for drag detection
+let panelBackdrop = null;
 
 function createVRPanel() {
-  const bg = new THREE.Mesh(new THREE.PlaneGeometry(0.95, 0.80),
-    new THREE.MeshBasicMaterial({ color: 0x0c1428, transparent: true, opacity: 0.92, side: THREE.DoubleSide }));
+  // Backdrop: push it back with polygonOffset so text always wins
+  const bgMat = new THREE.MeshBasicMaterial({
+    color: 0x0c1428, transparent: true, opacity: 0.92, side: THREE.DoubleSide,
+    polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1,
+  });
+  const bg = new THREE.Mesh(new THREE.PlaneGeometry(0.95, 0.80), bgMat);
   bg.name = 'panelBackdrop';
+  bg.renderOrder = 0;
   vrPanel.add(bg);
   panelBackdrop = bg;
-  vrPanel.add(new THREE.LineSegments(new THREE.EdgesGeometry(bg.geometry),
-    new THREE.LineBasicMaterial({ color: CONFIG.cyan, transparent: true, opacity: 0.6 })));
+
+  const borderMat = new THREE.LineBasicMaterial({ color: CONFIG.cyan, transparent: true, opacity: 0.6 });
+  const border = new THREE.LineSegments(new THREE.EdgesGeometry(bg.geometry), borderMat);
+  border.renderOrder = 1;
+  vrPanel.add(border);
 
   const t = makePanelLabel('SYMMETRY EXPLORER', CONFIG.cyan, 32);
-  t.scale.set(2.8,2.8,1); t.position.set(0, 0.33, 0.02); vrPanel.add(t);
+  t.scale.set(2.8,2.8,1); t.position.set(0, 0.33, 0.02); t.renderOrder = 2;
+  vrPanel.add(t);
   const dl = makePanelLabel('DISTRIBUTION', 0xe0ecf4, 26);
-  dl.scale.set(1.8,1.8,1); dl.position.set(0, 0.22, 0.02); vrPanel.add(dl);
+  dl.scale.set(1.8,1.8,1); dl.position.set(0, 0.22, 0.02); dl.renderOrder = 2;
+  vrPanel.add(dl);
 
   mkVRBtn(vrPanel, -0.16, 0.09, 'point', drawPointIcon, () => selectDistribution('point'));
   mkVRBtn(vrPanel, 0.16, 0.09, 'line', drawLineIcon, () => selectDistribution('line'));
 
   const sl = makePanelLabel('GAUSSIAN SURFACE', 0xe0ecf4, 26);
-  sl.scale.set(1.8,1.8,1); sl.position.set(0, -0.06, 0.02); vrPanel.add(sl);
+  sl.scale.set(1.8,1.8,1); sl.position.set(0, -0.06, 0.02); sl.renderOrder = 2;
+  vrPanel.add(sl);
 
   mkVRBtn(vrPanel, -0.30, -0.20, 'sphere', drawSphereIcon, () => selectSurface('sphere'));
   mkVRBtn(vrPanel, 0.0, -0.20, 'cylPar', drawCylParIcon, () => selectSurface('cylPar'));
@@ -582,7 +593,8 @@ function mkVRBtn(parent, x, y, id, drawFn, cb) {
   const tex = new THREE.CanvasTexture(c); tex.minFilter = THREE.LinearFilter;
   const m = new THREE.Mesh(new THREE.PlaneGeometry(0.14, 0.14),
     new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide, depthTest: false }));
-  m.position.set(x, y, 0.02); m.userData = { id, callback: cb };
+  m.position.set(x, y, 0.02); m.renderOrder = 2;
+  m.userData = { id, callback: cb };
   parent.add(m); panelButtons.push(m);
 }
 
