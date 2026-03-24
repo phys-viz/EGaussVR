@@ -83,8 +83,8 @@ const CONFIG = {
   cylCapNRings: 3,   // radial rings on endcaps
   cylCapNWedges: 12, // angular wedges on endcaps
   // Arrow appearance
-  arrowMinLength: 0.06,
-  arrowMaxLength: 0.28,
+  arrowMinLength: 0.02,
+  arrowMaxLength: 0.40,
   arrowHeadFraction: 0.3,
   arrowHeadWidthFraction: 0.5,
   // Uniformity
@@ -442,10 +442,11 @@ function updateArrows() {
   data.forEach(d => {
     if (d.mag < 0.001) return;
     const t = maxM > minM ? (d.mag - minM) / (maxM - minM) : 0.5;
+    const tMapped = Math.pow(t, 0.4);
     const color = state.isUniform ? new THREE.Color(CONFIG.green) : magToColor(t);
     const len = state.isUniform
       ? (CONFIG.arrowMinLength + CONFIG.arrowMaxLength) * 0.5
-      : CONFIG.arrowMinLength + (CONFIG.arrowMaxLength - CONFIG.arrowMinLength) * t;
+      : CONFIG.arrowMinLength + (CONFIG.arrowMaxLength - CONFIG.arrowMinLength) * tMapped;
     const hLen = len * CONFIG.arrowHeadFraction;
     const hWid = hLen * CONFIG.arrowHeadWidthFraction;
     arrowGroup.add(new THREE.ArrowHelper(d.E.clone().normalize(), d.worldPos, len, color, hLen, hWid));
