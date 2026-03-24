@@ -140,7 +140,7 @@ function makePanelLabel(text, color, fontSize) {
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, 512, 64);
   const tex = new THREE.CanvasTexture(c); tex.minFilter = THREE.LinearFilter;
   return new THREE.Mesh(new THREE.PlaneGeometry(0.25, 0.03),
-    new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide, depthWrite: false }));
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide, depthWrite: false, depthTest: false }));
 }
 function makeSceneLabel(text, color, fontSize) {
   const c = document.createElement('canvas'); c.width = 256; c.height = 64;
@@ -560,15 +560,15 @@ function createVRPanel() {
     new THREE.LineBasicMaterial({ color: CONFIG.cyan, transparent: true, opacity: 0.6 })));
 
   const t = makePanelLabel('SYMMETRY EXPLORER', CONFIG.cyan, 32);
-  t.scale.set(2.8,2.8,1); t.position.set(0, 0.33, 0.005); vrPanel.add(t);
+  t.scale.set(2.8,2.8,1); t.position.set(0, 0.33, 0.02); vrPanel.add(t);
   const dl = makePanelLabel('DISTRIBUTION', 0xe0ecf4, 26);
-  dl.scale.set(1.8,1.8,1); dl.position.set(0, 0.22, 0.005); vrPanel.add(dl);
+  dl.scale.set(1.8,1.8,1); dl.position.set(0, 0.22, 0.02); vrPanel.add(dl);
 
   mkVRBtn(vrPanel, -0.16, 0.09, 'point', drawPointIcon, () => selectDistribution('point'));
   mkVRBtn(vrPanel, 0.16, 0.09, 'line', drawLineIcon, () => selectDistribution('line'));
 
   const sl = makePanelLabel('GAUSSIAN SURFACE', 0xe0ecf4, 26);
-  sl.scale.set(1.8,1.8,1); sl.position.set(0, -0.06, 0.005); vrPanel.add(sl);
+  sl.scale.set(1.8,1.8,1); sl.position.set(0, -0.06, 0.02); vrPanel.add(sl);
 
   mkVRBtn(vrPanel, -0.30, -0.20, 'sphere', drawSphereIcon, () => selectSurface('sphere'));
   mkVRBtn(vrPanel, 0.0, -0.20, 'cylPar', drawCylParIcon, () => selectSurface('cylPar'));
@@ -581,8 +581,8 @@ function mkVRBtn(parent, x, y, id, drawFn, cb) {
   drawFn(c);
   const tex = new THREE.CanvasTexture(c); tex.minFilter = THREE.LinearFilter;
   const m = new THREE.Mesh(new THREE.PlaneGeometry(0.14, 0.14),
-    new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide }));
-  m.position.set(x, y, 0.005); m.userData = { id, callback: cb };
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide, depthTest: false }));
+  m.position.set(x, y, 0.02); m.userData = { id, callback: cb };
   parent.add(m); panelButtons.push(m);
 }
 
