@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gauss's Law Symmetry Explorer — VR</title>
+  <title>Gauss's Law Symmetry Explorer - VR</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -40,24 +40,24 @@
 </head>
 <body>
 <div id="info">
-  <div class="title">GAUSS'S LAW — SYMMETRY EXPLORER</div>
+  <div class="title">GAUSS'S LAW - SYMMETRY EXPLORER</div>
   <div class="sub">Choose a charge distribution and Gaussian surface. Drag the surface to find where E is constant.</div>
 </div>
 <div id="status-bar"></div>
 <div id="desktop-panel">
   <div class="btn-group">
     <span class="btn-label">Charge</span>
-    <button onclick="selectDistribution('point')" id="btn-point">⊕ Point</button>
-    <button onclick="selectDistribution('line')" id="btn-line">∣ Line</button>
+    <button id="btn-point">⊕ Point</button>
+    <button id="btn-line">∣ Line</button>
   </div>
   <div class="btn-group">
     <span class="btn-label">Surface</span>
-    <button onclick="selectSurface('sphere')" id="btn-sphere">◯ Sphere</button>
-    <button onclick="selectSurface('cylPar')" id="btn-cylPar">⊞ Cyl ∥</button>
-    <button onclick="selectSurface('cylPerp')" id="btn-cylPerp">⊞ Cyl ⊥</button>
+    <button id="btn-sphere">◯ Sphere</button>
+    <button id="btn-cylPar">⊞ Cyl ∥</button>
+    <button id="btn-cylPerp">⊞ Cyl ⊥</button>
   </div>
   <div class="btn-group">
-    <button onclick="resetSurfacePosition()" id="btn-reset">↺ Reset</button>
+    <button id="btn-reset">↺ Reset</button>
   </div>
 </div>
 <div id="vr-button-container"></div>
@@ -91,10 +91,14 @@ const CONFIG = {
   uniformityThreshold: 0.08,
 };
 
-// ═══ SCENE ═══
+// â•â•â• SCENE â•â•â•
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(CONFIG.bgColor);
 scene.fog = new THREE.FogExp2(CONFIG.bgColor, 0.06);
+const infoEl = document.getElementById('info');
+const statusBarEl = document.getElementById('status-bar');
+const desktopPanelEl = document.getElementById('desktop-panel');
+const vrButtonContainerEl = document.getElementById('vr-button-container');
 const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.05, 100);
 camera.position.set(0, 1.6, 0);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -104,7 +108,7 @@ renderer.xr.enabled = true;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.2;
 document.body.appendChild(renderer.domElement);
-document.getElementById('vr-button-container').appendChild(VRButton.createButton(renderer));
+vrButtonContainerEl.appendChild(VRButton.createButton(renderer));
 const orbitControls = new OrbitControls(camera, renderer.domElement);
 orbitControls.target.set(0, 1.3, -1.8);
 orbitControls.enableDamping = true; orbitControls.dampingFactor = 0.08; orbitControls.update();
@@ -114,7 +118,7 @@ dirLight.position.set(2, 4, 1); scene.add(dirLight);
 const ptLight = new THREE.PointLight(CONFIG.cyan, 0.4, 10);
 ptLight.position.set(0, 2.5, -1.5); scene.add(ptLight);
 
-// ═══ SCENE PIVOT (orbits around chargeOrigin) ═══
+// â•â•â• SCENE PIVOT (orbits around chargeOrigin) â•â•â•
 const scenePivot = new THREE.Group();
 scenePivot.position.copy(CONFIG.chargeOrigin);
 scene.add(scenePivot);
@@ -122,7 +126,7 @@ const sceneContent = new THREE.Group();
 sceneContent.position.copy(CONFIG.chargeOrigin.clone().negate());
 scenePivot.add(sceneContent);
 
-// ═══ ENVIRONMENT ═══
+// â•â•â• ENVIRONMENT â•â•â•
 const grid = new THREE.GridHelper(20, 40, CONFIG.gridHighlight, CONFIG.gridColor);
 grid.material.opacity = 0.4; grid.material.transparent = true; scene.add(grid);
 function mkAxis(dir, color, len) {
@@ -135,13 +139,13 @@ axes.add(mkAxis(new THREE.Vector3(0,1,0), 0x44ff44, 3));
 axes.add(mkAxis(new THREE.Vector3(0,0,1), 0x4444ff, 3));
 axes.position.copy(CONFIG.chargeOrigin).setY(0); sceneContent.add(axes);
 
-// ═══ STATE ═══
+// â•â•â• STATE â•â•â•
 const state = { distribution: null, surface: null, surfaceOffset: new THREE.Vector3(0.6, 0.3, 0.4), isUniform: false };
 const distributionGroup = new THREE.Group(); sceneContent.add(distributionGroup);
 const surfaceGroup = new THREE.Group(); sceneContent.add(surfaceGroup);
 const arrowGroup = new THREE.Group(); sceneContent.add(arrowGroup);
 
-// ═══ LABELS ═══
+// â•â•â• LABELS â•â•â•
 function makePanelLabel(text, color, fontSize) {
   const c = document.createElement('canvas'); c.width = 1024; c.height = 128;
   const ctx = c.getContext('2d'); ctx.font = 'bold ' + ((fontSize||24)*2) + 'px Share Tech Mono, monospace';
@@ -162,7 +166,7 @@ function makeSceneLabel(text, color, fontSize) {
   m.name = 'sceneLabel'; return m;
 }
 
-// ═══ CHARGE DISTRIBUTIONS ═══
+// â•â•â• CHARGE DISTRIBUTIONS â•â•â•
 function clearDistribution() {
   while (distributionGroup.children.length) {
     const ch = distributionGroup.children[0];
@@ -203,7 +207,7 @@ function createLineCharge() {
   lbl.scale.set(1.6, 1.6, 1); lbl.position.set(o.x + 0.2, o.y + 1.5, o.z); distributionGroup.add(lbl);
 }
 
-// ═══ PATCH-BASED GAUSSIAN SURFACES ═══
+// â•â•â• PATCH-BASED GAUSSIAN SURFACES â•â•â•
 let surfaceMesh = null; // invisible interaction mesh for raycasting
 
 function clearSurface() {
@@ -216,7 +220,7 @@ function clearSurface() {
 }
 function getSurfaceCenter() { return CONFIG.chargeOrigin.clone().add(state.surfaceOffset); }
 
-// ═══ TILE SYSTEM ═══
+// â•â•â• TILE SYSTEM â•â•â•
 // A tile is a small flat square at a sample point, tangent to the surface
 // Returns { center (local), normal (local) } for arrow placement
 
@@ -330,7 +334,7 @@ function createGaussianSurface(type) {
   const container = new THREE.Group();
   container.position.copy(center);
 
-  // ── Clean transparent shell (no wireframe) ──
+  // â”€â”€ Clean transparent shell (no wireframe) â”€â”€
   const shellMat = new THREE.MeshBasicMaterial({
     color: CONFIG.green, transparent: true, opacity: 0.12,
     side: THREE.DoubleSide, depthWrite: false,
@@ -348,7 +352,7 @@ function createGaussianSurface(type) {
 
   container.add(new THREE.Mesh(shellGeo, shellMat));
 
-  // ── Tiles ──
+  // â”€â”€ Tiles â”€â”€
   let tiles;
   if (type === 'sphere') {
     tiles = buildSphereTiles(CONFIG.sphereRadius, CONFIG.sphereTileCount, CONFIG.tileSize);
@@ -375,7 +379,7 @@ function createGaussianSurface(type) {
   currentTiles = tiles;
   surfaceGroup.add(container);
 
-  // ── Symmetry indicators ──
+  // â”€â”€ Symmetry indicators â”€â”€
   const symColor = CONFIG.cyan;
   const symMat = new THREE.MeshBasicMaterial({ color: symColor });
 
@@ -428,7 +432,7 @@ function createGaussianSurface(type) {
   surfaceGroup.add(surfaceMesh);
 }
 
-// ═══ E-FIELD ═══
+// â•â•â• E-FIELD â•â•â•
 function computeEField(worldPos) {
   const o = CONFIG.chargeOrigin;
   if (state.distribution === 'point') {
@@ -444,7 +448,7 @@ function computeEField(worldPos) {
   return new THREE.Vector3();
 }
 
-// ═══ ARROWS ═══
+// â•â•â• ARROWS â•â•â•
 function clearArrows() {
   while (arrowGroup.children.length) {
     const ch = arrowGroup.children[0];
@@ -527,7 +531,7 @@ function updateStatusBar() {
     : '<span style="color:#7a9bb5">E-field magnitude varies across the surface. Try repositioning.</span>';
 }
 
-// ═══ VR PANEL ═══
+// â•â•â• VR PANEL â•â•â•
 const vrPanel = new THREE.Group();
 vrPanel.position.set(-0.7, 1.4, -1.0); vrPanel.rotation.y = 0.35;
 scene.add(vrPanel);
@@ -582,7 +586,7 @@ function mkVRBtn(parent, x, y, id, drawFn, cb) {
   parent.add(m); panelButtons.push(m);
 }
 
-// ═══ ICONS (high contrast, bold) ═══
+// â•â•â• ICONS (high contrast, bold) â•â•â•
 function drawPointIcon(c) {
   const x = c.getContext('2d'); x.clearRect(0,0,256,256); x.scale(2,2);
   // Dark bg with bright border
@@ -680,7 +684,7 @@ function drawResetIcon(c) {
   x.font='bold 16px Share Tech Mono'; x.fillStyle='#ffffff'; x.textAlign='center'; x.fillText('RESET',64,100);
 }
 
-// ═══ VR CONTROLLERS ═══
+// â•â•â• VR CONTROLLERS â•â•â•
 const c0 = renderer.xr.getController(0), c1 = renderer.xr.getController(1);
 scene.add(c0); scene.add(c1);
 const cmf = new XRControllerModelFactory();
@@ -695,6 +699,11 @@ c0.add(mkRay()); c1.add(mkRay());
 
 const cState = { grabbing: null, prev: new THREE.Vector3(), panelGrab: null, panelPrev: new THREE.Vector3() };
 const rc = new THREE.Raycaster(), tm = new THREE.Matrix4();
+const _dragCamDir = new THREE.Vector3();
+const _dragIntersect = new THREE.Vector3();
+const _vrDelta = new THREE.Vector3();
+const _panelDelta = new THREE.Vector3();
+const _invSceneQuat = new THREE.Quaternion();
 
 function getRay(ctrl) {
   tm.identity().extractRotation(ctrl.matrixWorld);
@@ -741,80 +750,94 @@ c1.addEventListener('selectstart', onSS); c1.addEventListener('selectend', onSE)
 c0.addEventListener('squeezestart', onSqueezeStart); c0.addEventListener('squeezeend', onSqueezeEnd);
 c1.addEventListener('squeezestart', onSqueezeStart); c1.addEventListener('squeezeend', onSqueezeEnd);
 
-// ═══ DESKTOP MOUSE ═══
+// â•â•â• DESKTOP MOUSE â•â•â•
 const mouse = new THREE.Vector2(), mrc = new THREE.Raycaster();
 let mDrag = false, mPlane = new THREE.Plane(), mOff = new THREE.Vector3();
+let dragPointerId = null;
 
 renderer.domElement.addEventListener('pointerdown', e => {
+  if (renderer.xr.isPresenting || e.button !== 0) return;
   mouse.set((e.clientX/window.innerWidth)*2-1, -(e.clientY/window.innerHeight)*2+1);
   mrc.setFromCamera(mouse, camera);
   if (surfaceMesh && mrc.intersectObject(surfaceMesh).length > 0) {
     mDrag = true; orbitControls.enabled = false;
-    const cd = new THREE.Vector3(); camera.getWorldDirection(cd);
-    mPlane.setFromNormalAndCoplanarPoint(cd, surfaceMesh.position);
-    const ix = new THREE.Vector3(); mrc.ray.intersectPlane(mPlane, ix);
-    mOff.copy(surfaceMesh.position).sub(ix);
+    dragPointerId = e.pointerId;
+    renderer.domElement.setPointerCapture(e.pointerId);
+    camera.getWorldDirection(_dragCamDir);
+    mPlane.setFromNormalAndCoplanarPoint(_dragCamDir, surfaceMesh.position);
+    if (mrc.ray.intersectPlane(mPlane, _dragIntersect)) mOff.copy(surfaceMesh.position).sub(_dragIntersect);
+    else mOff.set(0, 0, 0);
   }
 });
 renderer.domElement.addEventListener('pointermove', e => {
-  if (!mDrag) return;
+  if (!mDrag || e.pointerId !== dragPointerId) return;
   mouse.set((e.clientX/window.innerWidth)*2-1, -(e.clientY/window.innerHeight)*2+1);
   mrc.setFromCamera(mouse, camera);
-  const ix = new THREE.Vector3();
-  if (mrc.ray.intersectPlane(mPlane, ix)) {
-    const np = ix.add(mOff);
+  if (mrc.ray.intersectPlane(mPlane, _dragIntersect)) {
+    const np = _dragIntersect.add(mOff);
     state.surfaceOffset.copy(np).sub(CONFIG.chargeOrigin);
     moveSurface(np); updateArrows();
   }
 });
-renderer.domElement.addEventListener('pointerup', () => { if (mDrag) { mDrag = false; orbitControls.enabled = true; } });
+function stopDesktopDrag(e) {
+  if (!mDrag) return;
+  if (e && dragPointerId !== null && e.pointerId !== dragPointerId) return;
+  if (dragPointerId !== null && renderer.domElement.hasPointerCapture(dragPointerId)) {
+    renderer.domElement.releasePointerCapture(dragPointerId);
+  }
+  mDrag = false;
+  dragPointerId = null;
+  orbitControls.enabled = !renderer.xr.isPresenting;
+}
+renderer.domElement.addEventListener('pointerup', stopDesktopDrag);
+renderer.domElement.addEventListener('pointercancel', stopDesktopDrag);
+renderer.domElement.addEventListener('pointerleave', stopDesktopDrag);
 
-// ═══ MOVE / STATE ═══
+// â•â•â• MOVE / STATE â•â•â•
 function moveSurface(wp) {
   surfaceGroup.children.forEach(ch => ch.position.copy(wp));
 }
 
-window.selectDistribution = function(type) {
+function selectDistribution(type) {
   state.distribution = type;
   document.querySelectorAll('#desktop-panel button').forEach(b => b.classList.remove('active'));
   const btn = document.getElementById('btn-'+type); if (btn) btn.classList.add('active');
   if (state.surface) { const sb = document.getElementById('btn-'+state.surface); if (sb) sb.classList.add('active'); }
   if (type === 'point') createPointCharge(); else if (type === 'line') createLineCharge();
   updateArrows();
-};
-window.selectSurface = function(type) {
+}
+function selectSurface(type) {
   state.surface = type;
   document.querySelectorAll('#desktop-panel button').forEach(b => { if (!['btn-point','btn-line'].includes(b.id)) b.classList.remove('active'); });
   const btn = document.getElementById('btn-'+type); if (btn) btn.classList.add('active');
   if (state.distribution) { const db = document.getElementById('btn-'+state.distribution); if (db) db.classList.add('active'); }
   createGaussianSurface(type); updateArrows();
-};
-window.resetSurfacePosition = function() {
+}
+function resetSurfacePosition() {
   state.surfaceOffset.set(0.6, 0.3, 0.4);
   if (state.surface) { createGaussianSurface(state.surface); updateArrows(); }
-};
+}
 
 function updateVRDrag() {
   // Surface dragging (transform delta to scene local space)
   if (cState.grabbing && surfaceMesh) {
     const cp = new THREE.Vector3().setFromMatrixPosition(cState.grabbing.matrixWorld);
-    const delta = cp.clone().sub(cState.prev); cState.prev.copy(cp);
+    const delta = _vrDelta.copy(cp).sub(cState.prev); cState.prev.copy(cp);
     // Transform world delta into sceneContent's local space
-    const invQuat = new THREE.Quaternion();
-    sceneContent.getWorldQuaternion(invQuat).invert();
-    delta.applyQuaternion(invQuat);
+    sceneContent.getWorldQuaternion(_invSceneQuat).invert();
+    delta.applyQuaternion(_invSceneQuat);
     state.surfaceOffset.add(delta);
     moveSurface(getSurfaceCenter()); updateArrows();
   }
   // Panel dragging
   if (cState.panelGrab) {
     const cp = new THREE.Vector3().setFromMatrixPosition(cState.panelGrab.matrixWorld);
-    const delta = cp.clone().sub(cState.panelPrev); cState.panelPrev.copy(cp);
+    const delta = _panelDelta.copy(cp).sub(cState.panelPrev); cState.panelPrev.copy(cp);
     vrPanel.position.add(delta);
   }
 }
 
-// ═══ JOYSTICK SCENE CONTROL (right stick only) ═══
+// â•â•â• JOYSTICK SCENE CONTROL (right stick only) â•â•â•
 const DEADZONE = 0.15;
 const MOVE_SPEED = 1.5;   // meters per second
 const ROTATE_SPEED = 1.2; // radians per second
@@ -848,7 +871,7 @@ function updateJoystickScene(dt) {
   }
 }
 
-// ═══ ANIMATE ═══
+// â•â•â• ANIMATE â•â•â•
 const clock = new THREE.Clock();
 function animate() {
   const dt = clock.getDelta();
@@ -878,12 +901,37 @@ function animate() {
   renderer.render(scene, camera);
 }
 renderer.setAnimationLoop(animate);
+renderer.xr.addEventListener('sessionstart', () => {
+  desktopPanelEl.style.display = 'none';
+  infoEl.style.display = 'none';
+  statusBarEl.style.display = 'none';
+  vrButtonContainerEl.style.display = 'none';
+  orbitControls.enabled = false;
+  stopDesktopDrag();
+  cState.grabbing = null;
+  cState.panelGrab = null;
+});
+renderer.xr.addEventListener('sessionend', () => {
+  desktopPanelEl.style.display = 'flex';
+  infoEl.style.display = 'block';
+  statusBarEl.style.display = 'block';
+  vrButtonContainerEl.style.display = 'block';
+  orbitControls.enabled = true;
+  cState.grabbing = null;
+  cState.panelGrab = null;
+});
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// ═══ INIT ═══
+// â•â•â• INIT â•â•â•
+document.getElementById('btn-point').addEventListener('click', () => selectDistribution('point'));
+document.getElementById('btn-line').addEventListener('click', () => selectDistribution('line'));
+document.getElementById('btn-sphere').addEventListener('click', () => selectSurface('sphere'));
+document.getElementById('btn-cylPar').addEventListener('click', () => selectSurface('cylPar'));
+document.getElementById('btn-cylPerp').addEventListener('click', () => selectSurface('cylPerp'));
+document.getElementById('btn-reset').addEventListener('click', resetSurfacePosition);
 createVRPanel();
 selectDistribution('point');
 selectSurface('sphere');
